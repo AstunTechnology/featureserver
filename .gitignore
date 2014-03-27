@@ -51,3 +51,6 @@ xcuserdata/
 *.build
 DerivedData/
 web.config
+*.cfg
+*.cgi
+*.fcgi
