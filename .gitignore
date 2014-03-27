@@ -50,3 +50,4 @@ xcuserdata/
 # build products
 *.build
 DerivedData/
+web.config
