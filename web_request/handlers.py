@@ -186,20 +186,29 @@ def cgi (dispatch_function):
             accepts = os.environ['HTTP_ACCEPT']
         
         request_method = os.environ["REQUEST_METHOD"]
-
+        content_length = int(os.environ["CONTENT_LENGTH"])
+        
         post_data = None 
         params = {}
         if request_method != "GET" and request_method != "DELETE":
-            post_data = sys.stdin.read()
+            if content_length:
+                # IIS doesn't seem to provide EOF
+                post_data = sys.stdin.read(content_length)   
+            else:
+                # would we ever not have content length?
+                post_data = sys.stdin.read()
+            
             
             #if post_data:
             #    for key, value in cgimod.parse_qsl(post_data, keep_blank_values=True):
             #        params[key.lower()] = value
             
-            fields = cgimod.FieldStorage()
+            # StringIO to create filehandler so data can be read again by cgi 
+            fields = cgimod.FieldStorage(fp=StringIO.StringIO(post_data))
             if fields <> None:
                 for key, value in cgimod.parse_qsl(fields.qs_on_post, keep_blank_values=True):
                     params[key.lower()] = value
+            
                 
         else:
             fields = cgimod.FieldStorage()
@@ -208,7 +217,7 @@ def cgi (dispatch_function):
                     params[key.lower()] = urllib.unquote(fields[key].value)
             except TypeError:
                 pass
-        
+    
         path_info = base_path = ""
 
         if "PATH_INFO" in os.environ: 
@@ -267,5 +276,6 @@ def cgi (dispatch_function):
         print "An error occurred: %s\n%s\n" % (
             str(error), 
             "".join(traceback.format_tb(sys.exc_traceback)))
-        print params    
+        if params:
+            print params    
 

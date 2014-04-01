@@ -54,3 +54,4 @@ web.config
 *.cfg
 *.cgi
 *.fcgi
+*.bak

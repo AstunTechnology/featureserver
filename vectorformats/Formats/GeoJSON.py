@@ -63,6 +63,77 @@ class GeoJSON(Format):
             "geometry": feature.geometry, 
             "properties": feature.properties}
 
+    
+    def encode_transaction(self, response, to_string=True, **kwargs):
+        failedCount = 0
+        
+        summary = response.getSummary()
+        result_data = {
+            'transactionSummary': {
+                    'totalInserted': summary.getTotalInserted(), 
+                    'totalUpdated': summary.getTotalUpdated(), 
+                    'totalDeleted': summary.getTotalDeleted(), 
+                    'totalReplaced': summary.getTotalReplaced()
+            }
+        }
+        
+        insertResult = response.getInsertResults()
+        result_data['insertResults'] = []
+        for insert in insertResult:
+            result_data['insertResults'].append({
+                'handle': insert.getHandle(),
+                'resourceId': insert.getResourceId()
+            })
+            if len(insert.getHandle()) > 0:
+                failedCount += 1
+
+        updateResult = response.getUpdateResults()
+        result_data['updateResults'] = []
+        for update in updateResult:
+            result_data['updateResults'].append({
+                'handle': update.getHandle(),
+                'resourceId': update.getResourceId()
+            })
+            if len(update.getHandle()) > 0:
+                failedCount += 1
+
+        replaceResult = response.getReplaceResults()
+        result_data['replaceResults'] = []
+        for replace in replaceResult:
+            result_data['replaceResults'].append({
+                'handle': replace.getHandle(),
+                'resourceId': replace.getResourceId()
+            })
+            if len(replace.getHandle()) > 0:
+                failedCount += 1
+        
+        deleteResult = response.getDeleteResults()
+        result_data['deleteResults'] = []
+        for delete in deleteResult:
+            result_data['deleteResults'].append({
+                'handle': delete.getHandle(),
+                'resourceId': delete.getResourceId()
+            })
+            if len(delete.getHandle()) > 0:
+                failedCount += 1
+
+        if failedCount:    
+            if (len(insertResult) 
+                + len(updateResult) 
+                + len(replaceResult) 
+                + len(deleteResult)) > failedCount:
+                result_data['status'] = 'PARTIAL'
+            else:
+                result_data['status'] = 'FAILED'
+        else:
+            result_data['status'] = 'SUCCESS'
+        
+        if to_string:
+            result = json_dumps(result_data) 
+        else:
+            result = result_data
+        return result
+
     def encode_exception_report(self, exceptionReport):
         results = []
         data = {}

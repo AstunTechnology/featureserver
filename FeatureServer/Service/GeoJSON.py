@@ -3,10 +3,12 @@ __copyright__ = "Copyright (c) 2006-2008 MetaCarta"
 __license__ = "Clear BSD" 
 __version__ = "$Id: GeoJSON.py 483 2008-05-18 10:38:32Z crschmidt $"
 
+import vectorformats.Formats.GeoJSON 
+
 from FeatureServer.Service.Request import Request
 from FeatureServer.Service.Action import Action
 from vectorformats.Feature import Feature
-import vectorformats.Formats.GeoJSON 
+from FeatureServer.WebFeatureService.Response.TransactionResponse import TransactionResponse
 
 try:
     import simplejson
@@ -45,15 +47,18 @@ class GeoJSON(Request):
     
     def encode(self, result):
         g = vectorformats.Formats.GeoJSON.GeoJSON()
-        result = g.encode(result)
+        if isinstance(result, TransactionResponse):
+            output = g.encode_transaction(result)
+        else:
+            output = g.encode(result)
         
         if self.datasources[0]:
             datasource = self.service.datasources[self.datasources[0]]
         
         if self.callback and datasource and hasattr(datasource, 'gaping_security_hole'):
-            return ("text/plain", "%s(%s);" % (self.callback, result), None, 'utf-8')
+            return ("text/plain", "%s(%s);" % (self.callback, output), None, 'utf-8')
         else:    
-            return ("text/plain", result, None, 'utf-8')
+            return ("text/plain", output, None, 'utf-8')
 
     def encode_exception_report(self, exceptionReport):
         geojson = vectorformats.Formats.GeoJSON.GeoJSON()
