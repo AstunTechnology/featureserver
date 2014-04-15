@@ -131,16 +131,27 @@ class PostGIS (DataSource):
 
 
     def id_sequence (self):
-        return self.table + "_" + self.fid_col + "_seq"
+        suffix =  '_' + self.fid_col + '_seq'
+        table = self.table
+        suffix = ''
+        if self.table[-1:] == '"':
+            seq = table[:-1] + suffix + '"'
+        else:
+            seq = table + suffix
+
+        return seq
 
     def insert (self, action):
+        table = self.table
+        if '"' not in table:
+            table = '"{}"'.format(table)
         self.begin()
         if action.feature != None:
             feature = action.feature
             columns = '"'+'", "'.join(self.column_names(feature)+[self.geom_col])+'"'
             values = ", ".join(self.value_formats(feature)+["ST_SetSRID('%s'::geometry, %s) " % (WKT.to_wkt(feature.geometry), self.srid)])
 
-            sql = "INSERT INTO \"%s\" (%s) VALUES (%s)" % (self.table, columns, values)
+            sql = "INSERT INTO %s (%s) VALUES (%s)" % (table, columns, values)
 
             cursor = self.db.cursor()
             cursor.execute(str(sql), self.feature_values(feature))
@@ -165,11 +176,14 @@ class PostGIS (DataSource):
 
 
     def update (self, action):
+        table = self.table
+        if '"' not in table:
+            table = '"{}"'.format(table)
         if action.feature != None:
             feature = action.feature
             predicates = ", ".join( self.feature_predicates(feature) )
 
-            sql = "UPDATE %s SET %s WHERE %s = %d" % ( self.table, predicates, self.fid_col, action.id )
+            sql = "UPDATE %s SET %s WHERE %s = %d" % ( table, predicates, self.fid_col, action.id )
 
             cursor = self.db.cursor()
             cursor.execute(str(sql), self.feature_values(feature))
@@ -187,8 +201,11 @@ class PostGIS (DataSource):
         return None
 
     def delete (self, action):
+        table = self.table
+        if '"' not in table:
+            table = '"{}"'.format(table)
         if action.feature != None:
-            sql = "DELETE FROM \"%s\" WHERE %s = %%(%s)d" % ( self.table, self.fid_col, self.fid_col )
+            sql = "DELETE FROM %s WHERE %s = %%(%s)d" % ( table, self.fid_col, self.fid_col )
             cursor = self.db.cursor()
 
             try:
@@ -213,6 +230,9 @@ class PostGIS (DataSource):
 
     def select (self, action):
         cursor = self.db.cursor()
+        table = self.table
+        if '"' not in table:
+            table = '"{}"'.format(table)
 
         if action.id is not None:
             sql = "SELECT ST_AsText(ST_Transform(%s, %d)) as fs_text_geom, " % (self.geom_col, int(self.srid_out))
@@ -232,10 +252,9 @@ class PostGIS (DataSource):
                 additional_col = ",".join(cols)
                 sql += ", %s" % additional_col
 
-            sql += " FROM \"%s\" WHERE %s = %%(%s)s" % (self.table, self.fid_col, self.fid_col)
 
-            #sql = "SELECT ST_AsText(ST_Transform(%s, %d)) as fs_text_geom, %s as ele, %s as version, \"%s, %s FROM \"%s\" WHERE %s = %%(%s)s" % (
-            #        self.geom_col, int(self.srid_out), self.ele, self.version, self.fid_col, self.attribute_cols, self.table, self.fid_col, self.fid_col )
+            sql += " FROM %s WHERE %s = %%(%s)s" % (table, self.fid_col, self.fid_col)
+
 
             cursor.execute(str(sql), {self.fid_col: str(action.id)})
 
@@ -280,9 +299,8 @@ class PostGIS (DataSource):
                 sql += ", %s" % additional_col
 
 
-            sql += " FROM \"%s\"" % (self.table)
+            sql += ' FROM %s' % (table)
 
-            #sql = "SELECT ST_AsText(Transform(%s, %d)) as fs_text_geom, %s as ele, %s as version, \"%s\", %s FROM \"%s\"" % (self.geom_col, int(self.srid_out), self.ele, self.version, self.fid_col, self.attribute_cols, self.table)
             if filters:
                 sql += " WHERE " + " AND ".join(filters)
             if action.wfsrequest:
