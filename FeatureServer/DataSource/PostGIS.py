@@ -133,7 +133,7 @@ class PostGIS (DataSource):
     def id_sequence (self):
         suffix =  '_' + self.fid_col + '_seq'
         table = self.table
-        suffix = ''
+        seq = ''
         if self.table[-1:] == '"':
             seq = table[:-1] + suffix + '"'
         else:
