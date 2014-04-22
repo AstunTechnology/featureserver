@@ -400,3 +400,18 @@ class PostGIS (DataSource):
                         length = ''
 
         return (type, length)
+
+    def getBBOX(self):
+        self.begin()
+        cursor = self.db.cursor()
+        result = '-1 -1 -1 -1'
+        sql = 'SELECT ST_Extent({0}) AS bbox FROM {1}'.format(self.geom_col, self.table)
+        try:
+            cursor.execute(sql)
+            box = str(cursor.fetchone()[0]).strip()
+            # returns 'BOX(minx, miny, maxx, maxy)'
+            result = box[4:-1].replace(',',' ')
+            self.db.commit()
+        except:
+            pass
+        return result
