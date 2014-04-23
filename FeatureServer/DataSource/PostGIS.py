@@ -205,7 +205,7 @@ class PostGIS (DataSource):
         if '"' not in table:
             table = '"{}"'.format(table)
         if action.id != None:
-            sql = "DELETE FROM %s WHERE %s = %%(%s)d" % ( table, self.fid_col, self.fid_col )
+            sql = "DELETE FROM %s WHERE %s = %%(%s)s" % ( table, self.fid_col, self.fid_col )
             cursor = self.db.cursor()
 
             cursor.execute(str(sql), {self.fid_col: action.id})

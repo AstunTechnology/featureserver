@@ -11,6 +11,8 @@ bin
 var
 sdist
 develop-eggs
+simplejson
+shortuuid
 .installed.cfg
 
 # Installer logs
@@ -44,14 +46,22 @@ profile
 *.perspectivev3
 *.xcclassmodel/
 profile
+
 # xcode 4
 *.xcodeproj/
 xcuserdata/
+
 # build products
 *.build
 DerivedData/
-web.config
+
+# Configuration files
 *.cfg
 *.cgi
 *.fcgi
+
+#IIS 
+web.config
+
+# File backups
 *.bak
