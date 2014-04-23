@@ -208,20 +208,15 @@ class PostGIS (DataSource):
             sql = "DELETE FROM %s WHERE %s = %%(%s)d" % ( table, self.fid_col, self.fid_col )
             cursor = self.db.cursor()
 
-            try:
-                cursor.execute(str(sql) % {self.fid_col: action.id})
-            except:
-                cursor.execute(str(sql), {self.fid_col: action.id})
+            cursor.execute(str(sql), {self.fid_col: action.id})
 
             return DeleteResult(action.id, "")
 
         elif action.wfsrequest != None:
             sql = action.wfsrequest.getStatement(self)
             cursor = self.db.cursor()
-            try:
-                cursor.execute(str(sql) % {self.fid_col: action.id})
-            except:
-                cursor.execute(str(sql), {self.fid_col: action.id})
+
+            cursor.execute(str(sql), {self.fid_col: action.id})
 
             return DeleteResult(action.id, "")
 
