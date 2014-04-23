@@ -1,9 +1,10 @@
 #!/usr/bin/python
 __author__  = "MetaCarta"
 __copyright__ = "Copyright (c) 2006-2008 MetaCarta"
-__license__ = "Clear BSD" 
+__license__ = "Clear BSD"
 __version__ = "$Id: Server.py 607 2009-04-27 15:53:15Z crschmidt $"
 
+import logging
 import sys
 import time
 import os
@@ -25,7 +26,7 @@ from FeatureServer.Exceptions.ConnectionException import ConnectionException
 from FeatureServer.Exceptions.LayerNotFoundException import LayerNotFoundException
 
 
-import FeatureServer.Processing 
+import FeatureServer.Processing
 from web_request.response import Response
 
 # First, check explicit FS_CONFIG env var
@@ -46,21 +47,39 @@ class Server (object):
     """The server manages the datasource list, and does the management of
        request input/output.  Handlers convert their specific internal
        representation to the parameters that dispatchRequest is expecting,
-       then pass off to dispatchRequest. dispatchRequest turns the input 
+       then pass off to dispatchRequest. dispatchRequest turns the input
        parameters into a (content-type, response string) tuple, which the
-       servers can then return to clients. It is possible to integrate 
+       servers can then return to clients. It is possible to integrate
        FeatureServer into another content-serving framework like Django by
-       simply creating your own datasources (passed to the init function) 
+       simply creating your own datasources (passed to the init function)
        and calling the dispatchRequest method. The Server provides a classmethod
        to load datasources from a config file, which is the typical lightweight
        configuration method, but does use some amount of time at script startup.
-       """ 
-       
+       """
+
     def __init__ (self, datasources, metadata = {}, processes = {}):
         self.datasources   = datasources
         self.metadata      = metadata
-        self.processes     = processes 
-    
+        self.processes     = processes
+        log_format = format='%(levelname)s [%(asctime)s]: %(message)s'
+        log_level = logging.ERROR
+        level_config = self.metadata.get('log_level')
+        level_error = None
+        if level_config:
+            log_level = getattr(logging, level_config.upper(), None)
+            if not isinstance(log_level, int):
+                level_error = 'Log level specified ({}) not valid'
+                level_error = level_error.format(level_config)
+
+        if self.metadata.get('log_file'):
+            logging.basicConfig(filename=self.metadata.get('log_file'),
+                                level=log_level, format=log_format)
+        else:
+            logging.basicConfig(level=log_level, format=log_format)
+
+        if level_error:
+            logging.error(level_error)
+
     def _loadFromSection (cls, config, section, module_type, **objargs):
         type  = config.get(section, "type")
         module = __import__("%s.%s" % (module_type, type), globals(), locals(), type)
@@ -78,7 +97,7 @@ class Server (object):
            and metadata from a configuration file."""
         config = ConfigParser.ConfigParser()
         config.read(files)
-        
+
         metadata = {}
         if config.has_section("metadata"):
             for key in config.options("metadata"):
@@ -92,8 +111,8 @@ class Server (object):
                 try:
                     processes[section[8:]] = FeatureServer.Processing.loadFromSection(config, section)
                 except Exception, E:
-                    pass 
-            else:     
+                    pass
+            else:
                 datasources[section] = cls.loadFromSection(config, section, 'DataSource')
 
         return cls(datasources, metadata, processes)
@@ -128,21 +147,21 @@ class Server (object):
           'sqlite': 'SQLite',
           'dxf' : 'DXF'
         }
-        
+
         exceptionReport = ExceptionReport()
-        
+
         path = path_info.split("/")
-        
+
         found = False
-        
+
         format = ""
-        
+
         if params.has_key("format"):
             format = params['format']
             if format.lower() in content_types:
                 format = content_types[format.lower()]
                 found = True
-        
+
         if not found and len(path) > 1:
             path_pieces = path[-1].split(".")
             if len(path_pieces) > 1:
@@ -150,7 +169,7 @@ class Server (object):
                 if format.lower() in content_types:
                     format = content_types[format.lower()]
                     found = True
-        
+
         if not found and not params.has_key("service") and post_data:
             try:
                 dom = etree.XML(post_data)
@@ -162,7 +181,7 @@ class Server (object):
                 dom = etree.XML(post_data)
                 params['version'] = dom.get('version')
             except etree.ParseError: pass
-            
+
         if not found and not params.has_key("typename") and post_data:
             try:
                 dom = etree.XML(post_data)
@@ -176,19 +195,19 @@ class Server (object):
             if format.lower() in content_types:
                 format = content_types[format.lower()]
                 found = True
-        
+
         if not found and accepts:
             if accepts.lower() in content_types:
                 format = content_types[accepts.lower()]
                 found = True
-        
+
         if not found and not format:
             if self.metadata.has_key("default_service"):
                 format = self.metadata['default_service']
-            else:    
+            else:
                 format = "WFS"
-        
-                
+
+
         #===============================================================================
         # (reflection) dynamic load of format class e.g. WFS, KML, etc.
         # for supported format see package 'Service'
@@ -199,14 +218,14 @@ class Server (object):
         service_module = __import__("Service.%s" % format, globals(), locals(), format)
         service = getattr(service_module, format)
         request = service(self)
-        
+
         response = []
-        
+
         try:
             request.parse(params, path_info, host, post_data, request_method)
-            
-            # short circuit datasource where the first action is a metadata request. 
-            if len(request.actions) and request.actions[0].method == "metadata": 
+
+            # short circuit datasource where the first action is a metadata request.
+            if len(request.actions) and request.actions[0].method == "metadata":
                 return request.encode_metadata(request.actions[0])
 
             # short circuit datasource where a OGC WFS request is set
@@ -215,7 +234,7 @@ class Server (object):
                 version = '1.0.0'
                 if hasattr(request.actions[0], 'version') and len(request.actions[0].version) > 0:
                     version = request.actions[0].version
-                
+
                 if request.actions[0].request.lower() == "getcapabilities":
                     return getattr(request, request.actions[0].request.lower())(version)
                 elif request.actions[0].request.lower() == "describefeaturetype":
@@ -226,7 +245,7 @@ class Server (object):
             if request_method != "GET" and hasattr(datasource, 'processes'):
                 raise Exception("You can't post data to a processed layer.")
 
-        
+
             try:
                 datasource.begin()
 
@@ -237,7 +256,7 @@ class Server (object):
                 try:
                     transactionResponse = TransactionResponse()
                     transactionResponse.setSummary(TransactionSummary())
-                    
+
                     for action in request.actions:
                         method = getattr(datasource, action.method)
                         try:
@@ -248,7 +267,7 @@ class Server (object):
                                 response += result
                         except InvalidValueException as e:
                             exceptionReport.add(e)
-    
+
                         datasource.commit()
                 except:
                     datasource.rollback()
@@ -264,7 +283,7 @@ class Server (object):
 
             except ConnectionException as e:
                 exceptionReport.add(e)
-    
+
         except LayerNotFoundException as e:
             exceptionReport.add(e)
 
@@ -273,7 +292,7 @@ class Server (object):
                 service_module = __import__("Service.%s" % self.metadata['default_exception'], globals(), locals(), self.metadata['default_exception'])
                 service = getattr(service_module, self.metadata['default_exception'])
                 default_exception = service(self)
-                
+
                 if hasattr(default_exception, "default_exception"):
                     mime, data, headers, encoding = default_exception.encode_exception_report(exceptionReport)
                 else:
@@ -287,7 +306,7 @@ class Server (object):
                     service_module = __import__("Service.%s" % self.metadata['default_service'], globals(), locals(), self.metadata['default_service'])
                     service = getattr(service_module, self.metadata['default_service'])
                     default_service = service(self)
-                
+
                     if hasattr(default_service, "encode_exception_report"):
                         mime, data, headers, encoding = default_service.encode_exception_report(exceptionReport)
                     else:
@@ -296,101 +315,101 @@ class Server (object):
                         wfs_service = WFS(self)
                         mime, data, headers, encoding = wfs_service.encode_exception_report(exceptionReport)
 
-        
+
         else:
             mime, data, headers, encoding = request.encode(response)
 
-        return Response(data=data, content_type=mime, headers=headers, status_code=response_code, encoding=encoding)     
+        return Response(data=data, content_type=mime, headers=headers, status_code=response_code, encoding=encoding)
 
-    def dispatchWorkspaceRequest (self, base_path="", path_info="/", params={}, request_method = "GET", post_data = None,  accepts = ""):        
+    def dispatchWorkspaceRequest (self, base_path="", path_info="/", params={}, request_method = "GET", post_data = None,  accepts = ""):
         handler = FileHandler('workspace.db')
         handler.removeExpired()
-        
+
         # create workspace
         if params.has_key("base"):
             if params.has_key("request"):
-                
+
                 identifier = ''
                 if params.has_key('id'):
                     identifier = params['id']
-                    
+
                 short = handler.create(params['base'], params['request'], identifier)
-                
+
                 output = ""
-                 
+
                 if params.has_key("callback"):
                     output += params["callback"] + '('
-                
+
                 output += '{"key":"' + short + '"}'
-                
+
                 if params.has_key("callback"):
                     output += ');'
-                     
+
                 return Response(data=output.decode("utf-8"), content_type="application/json; charset=utf-8", status_code="200 OK")
-            
-        
+
+
         # handle WFS request
         elif params.has_key('key'):
-            
+
             handler.updateLastAccess(params['key'])
             data = handler.getByKey(params['key'])
-            if len(data) > 0:                    
+            if len(data) > 0:
                 #generate workspace specific datasource
                 for layer in self.datasources:
                     if layer == data[2]:
                         self.datasources = {layer : self.datasources[layer]}
                         self.datasources[layer].abstract += " :: " + str(data[0])
                         break
-                        
+
                 if params.has_key('request'):
                     if params['request'].lower() == 'getfeature':
                         if params.has_key('filter') <> True:
                             if post_data == None:
                                 params['filter'] = data[3]
-                    
+
                     return self.dispatchRequest(base_path, path_info, params, request_method, post_data, accepts)
-        
+
         # check workspace by id
         elif params.has_key('skey'):
             output = ""
             if params.has_key("callback"):
                 output += params["callback"] + '('
             output += '{"workspaces":['
-            
+
             data = handler.getByKey(params['skey'])
             if len(data) > 0:
                 date = time.strftime("%a %b %d, %Y  %I:%M:%S %p",time.localtime(float(data[4])))
                 output += '{"Workspace":"'+data[0]+'","LastAccess":"' + date  + '"},'
-                             
+
             output += "]}"
             if params.has_key("callback"):
                 output += ');'
-            
+
             return Response(data=output.decode("utf-8"), content_type="application/json; charset=utf-8", status_code="200 OK")
-        
+
         # check workspace by email
         elif params.has_key('sid'):
             output = ""
             if params.has_key("callback"):
                 output += params["callback"] + '('
             output += '{"workspaces":['
-            
+
             workspaces = handler.getByIdentifier(params['sid'])
-            
+
             for data in workspaces:
-            
+
                 date = time.strftime("%a %b %d, %Y  %I:%M:%S %p",time.localtime(float(data[4])))
                 output += '{"Workspace":"'+data[0]+'","LastAccess":"' + date  + '"},'
-            
+
             if len(data) > 0:
-                output = output[:-1] 
-            
+                output = output[:-1]
+
             output += "]}"
             if params.has_key("callback"):
                 output += ');'
-            
+
             return Response(data=output.decode("utf-8"), content_type="application/json; charset=utf-8", status_code="200 OK")
-        
+
         #TODO: not available
         return None
 
@@ -416,12 +435,12 @@ def wsgi_app (environ, start_response):
             if cfgTime > last:
                 last = cfgTime
         except:
-            pass        
+            pass
     if not theServer or last > lastRead:
         cfgs      = cfgfiles
         theServer = Server.load(*cfgs)
         lastRead = time.time()
-        
+
     return wsgi(theServer.dispatchRequest, environ, start_response)
 
 def wsgi_app_workspace(environ, start_response):
@@ -433,12 +452,12 @@ def wsgi_app_workspace(environ, start_response):
             if cfgTime > last:
                 last = cfgTime
         except:
-            pass        
+            pass
     if not theServer or last > lastRead:
         cfgs      = cfgfiles
         theServer = Server.load(*cfgs)
         lastRead = time.time()
-        
+
     return wsgi(theServer.dispatchWorkspaceRequest, environ, start_response)
 
 

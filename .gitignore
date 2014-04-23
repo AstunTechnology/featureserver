@@ -60,8 +60,13 @@ DerivedData/
 *.cgi
 *.fcgi
 
-#IIS 
+# IIS 
 web.config
 
 # File backups
 *.bak
+
+# Log files
+*.log
+
+# Other

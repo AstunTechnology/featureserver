@@ -24,6 +24,7 @@ except:
     import psycopg
 
 import copy
+import logging
 import re
 import datetime
 
@@ -154,6 +155,7 @@ class PostGIS (DataSource):
             sql = "INSERT INTO %s (%s) VALUES (%s)" % (table, columns, values)
 
             cursor = self.db.cursor()
+            logging.debug(sql)
             cursor.execute(str(sql), self.feature_values(feature))
 
             cursor.execute("SELECT currval('%s');" % self.id_sequence())
@@ -165,6 +167,7 @@ class PostGIS (DataSource):
             sql = action.wfsrequest.getStatement(self)
 
             cursor = self.db.cursor()
+            logging.debug(sql)
             cursor.execute(str(sql))
 
             cursor.execute("SELECT currval('%s');" % self.id_sequence())
@@ -181,20 +184,23 @@ class PostGIS (DataSource):
             table = '"{}"'.format(table)
         if action.feature != None:
             feature = action.feature
-            predicates = ", ".join( self.feature_predicates(feature) )
+            predicates = ", ".join(self.feature_predicates(feature))
+            attrs = self.feature_values(feature)
 
-            sql = "UPDATE %s SET %s WHERE %s = %d" % ( table, predicates, self.fid_col, action.id )
+            sql = "UPDATE %s SET %s WHERE %s = %d" % (table, predicates, self.fid_col, action.id)
 
             cursor = self.db.cursor()
-            cursor.execute(str(sql), self.feature_values(feature))
+            logging.debug(cursor.mogrify(sql, attrs))
+            cursor.execute(sql, attrs)
 
             return UpdateResult(action.id, "")
 
         elif action.wfsrequest != None:
-            sql = action.wfsrequest.getStatement(self)
+            sql = str(action.wfsrequest.getStatement(self))
 
             cursor = self.db.cursor()
-            cursor.execute(str(sql))
+            logging.debug(sql)
+            cursor.execute(sql)
 
             return UpdateResult(action.id, "")
 
@@ -204,19 +210,22 @@ class PostGIS (DataSource):
         table = self.table
         if '"' not in table:
             table = '"{}"'.format(table)
+        attrs = {self.fid_col: action.id}
         if action.id != None:
             sql = "DELETE FROM %s WHERE %s = %%(%s)s" % ( table, self.fid_col, self.fid_col )
-            cursor = self.db.cursor()
 
-            cursor.execute(str(sql), {self.fid_col: action.id})
+            cursor = self.db.cursor()
+            logging.debug(cursor.mogrify(sql, attrs))
+            cursor.execute(sql, attrs)
 
             return DeleteResult(action.id, "")
 
         elif action.wfsrequest != None:
             sql = action.wfsrequest.getStatement(self)
-            cursor = self.db.cursor()
 
-            cursor.execute(str(sql), {self.fid_col: action.id})
+            cursor = self.db.cursor()
+            logging.debug(cursor.mogrify(sql, attrs))
+            cursor.execute(sql, attrs)
 
             return DeleteResult(action.id, "")
 
@@ -246,12 +255,13 @@ class PostGIS (DataSource):
                 cols = self.additional_cols.split(';')
                 additional_col = ",".join(cols)
                 sql += ", %s" % additional_col
+            attrs = {self.fid_col: str(action.id)}
 
 
             sql += " FROM %s WHERE %s = %%(%s)s" % (table, self.fid_col, self.fid_col)
 
-
-            cursor.execute(str(sql), {self.fid_col: str(action.id)})
+            logging.debug(cursor.mogrify(sql, attrs))
+            cursor.execute(sql, attrs)
 
             result = [cursor.fetchone()]
         else:
@@ -317,6 +327,7 @@ class PostGIS (DataSource):
                 sql += " OFFSET %d" % action.startfeature
 
             try:
+                logging.debug(cursor.mogrify(sql, attrs))
                 cursor.execute(str(sql), attrs)
             except Exception, e:
                 if e.pgcode[:2] == errorcodes.CLASS_SYNTAX_ERROR_OR_ACCESS_RULE_VIOLATION:
