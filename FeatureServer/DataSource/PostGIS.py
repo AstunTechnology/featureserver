@@ -19,9 +19,9 @@ from FeatureServer.Exceptions.ConnectionException import ConnectionException
 
 try:
     import psycopg2 as psycopg
-
 except:
     import psycopg
+
 
 import copy
 import logging
@@ -148,6 +148,13 @@ class PostGIS (DataSource):
 
     def insert (self, action):
         self.begin()
+
+        cursor = self.db.cursor()
+
+        seq_sql = '''SELECT currval('"{}"."{}"'::regclass);'''.format(
+            self.schema, self.id_sequence())
+
+
         if action.feature != None:
             feature = action.feature
             column_arr = self.column_names(feature) + [self.geom_col]
@@ -157,31 +164,28 @@ class PostGIS (DataSource):
             value_arr = self.value_formats(feature) + [srid_wkt]
             values = ", ".join(value_arr)
 
-            sql = 'INSERT INTO {}.{} ({}) VALUES ({})'.format(
+            sql = 'INSERT INTO "{}"."{}" ({}) VALUES ({})'.format(
                 self.schema, self.table, columns, values)
 
-            cursor = self.db.cursor()
-            logging.debug(sql)
-            cursor.execute(str(sql), self.feature_values(feature))
-
-            cursor.execute("SELECT currval('{}');".format(self.id_sequence()))
-            action.id = cursor.fetchone()[0]
-
-            return InsertResult(action.id, '')
+            attrs = self.feature_values(feature)
+            logging.debug(cursor.mogrify(sql, attrs))
+            try:
+                cursor.execute(sql, attrs)
+            except Exception as e:
+                logging.error(e)
 
         elif action.wfsrequest != None:
             sql = action.wfsrequest.getStatement(self)
 
-            cursor = self.db.cursor()
             logging.debug(sql)
-            cursor.execute(str(sql))
+            cursor.execute(sql)
 
-            cursor.execute("SELECT currval('%s');" % self.id_sequence())
-            action.id = cursor.fetchone()[0]
+        else:
+            return None
 
-            return InsertResult(action.id, '')
-
-        return None
+        cursor.execute(seq_sql)
+        action.id = cursor.fetchone()[0]
+        return InsertResult(action.id, '')
 
 
     def update (self, action):
