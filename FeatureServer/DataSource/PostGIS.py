@@ -189,9 +189,10 @@ class PostGIS (DataSource):
             feature = action.feature
             predicates = ", ".join(self.feature_predicates(feature))
             attrs = self.feature_values(feature)
+            attrs[self.fid_col] = action.id
 
-            sql = 'UPDATE "{}"."{}" SET {} WHERE {} = {}' % (
-                self.schema, self.table, predicates, self.fid_col, str(action.id))
+            sql = 'UPDATE "{0}"."{1}" SET {2} WHERE "{3}" = %({3})s'.format(
+                self.schema, self.table, predicates, self.fid_col)
 
             cursor = self.db.cursor()
             logging.debug(cursor.mogrify(sql, attrs))
@@ -213,7 +214,7 @@ class PostGIS (DataSource):
     def delete (self, action):
         attrs = {self.fid_col: action.id}
         if action.id != None:
-            sql = 'DELETE FROM "{0}"."{1}" WHERE {2} = %({2})s'.format(
+            sql = 'DELETE FROM "{0}"."{1}" WHERE "{2}" = %({2})s'.format(
                 self.schema, self.table, self.fid_col)
 
             cursor = self.db.cursor()
