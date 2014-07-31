@@ -70,3 +70,4 @@ web.config
 *.log
 
 # Other
+*.txt

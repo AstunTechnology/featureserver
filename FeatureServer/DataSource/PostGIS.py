@@ -213,8 +213,8 @@ class PostGIS (DataSource):
     def delete (self, action):
         attrs = {self.fid_col: action.id}
         if action.id != None:
-            sql = 'DELETE FROM "{0}"."{1}" WHERE {2} = %%({2})s'.format(
-                self.schema, self.table, self.fid_col )
+            sql = 'DELETE FROM "{0}"."{1}" WHERE {2} = %({2})s'.format(
+                self.schema, self.table, self.fid_col)
 
             cursor = self.db.cursor()
             logging.debug(cursor.mogrify(sql, attrs))
