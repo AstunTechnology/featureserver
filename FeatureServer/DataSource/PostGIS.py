@@ -151,10 +151,6 @@ class PostGIS (DataSource):
 
         cursor = self.db.cursor()
 
-        seq_sql = '''SELECT currval('"{}"."{}"'::regclass);'''.format(
-            self.schema, self.id_sequence())
-
-
         if action.feature != None:
             feature = action.feature
             column_arr = self.column_names(feature) + [self.geom_col]
@@ -164,13 +160,15 @@ class PostGIS (DataSource):
             value_arr = self.value_formats(feature) + [srid_wkt]
             values = ", ".join(value_arr)
 
-            sql = 'INSERT INTO "{}"."{}" ({}) VALUES ({})'.format(
-                self.schema, self.table, columns, values)
+            sql = 'INSERT INTO "{}"."{}" ({}) VALUES ({}) RETURNING {}'.format(
+                self.schema, self.table, columns, values, self.fid_col)
 
             attrs = self.feature_values(feature)
             logging.debug(cursor.mogrify(sql, attrs))
+
             try:
                 cursor.execute(sql, attrs)
+                action.id = cursor.fetchone()[0]
             except Exception as e:
                 logging.error(e)
 
@@ -180,11 +178,15 @@ class PostGIS (DataSource):
             logging.debug(sql)
             cursor.execute(sql)
 
+            seq_sql = '''SELECT currval('"{}"."{}"'::regclass);'''.format(
+                self.schema, self.id_sequence())
+            cursor.execute(seq_sql)
+            action.id = cursor.fetchone()[0]
+
         else:
             return None
 
-        cursor.execute(seq_sql)
-        action.id = cursor.fetchone()[0]
+
         return InsertResult(action.id, '')
 
 
