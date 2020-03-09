@@ -1,0 +1,9 @@
+geomet
+simplejson
+lxml
+geoalchemy==0.7.2
+sqlalchemy==0.8.4
+gdal==2.4.4
+shortuuid
+psycopg2
+testing.postgresql==1.2.1
