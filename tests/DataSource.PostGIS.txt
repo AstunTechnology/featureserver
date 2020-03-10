@@ -1,18 +1,17 @@
   >>> from FeatureServer.DataSource.PostGIS import PostGIS
   >>> from FeatureServer.Server import Server
 
-  >>> from postgis import setup, teardown
+  >>> from postgis import setup, teardown, reset
 
   >>> db, db_con, db_conf = setup()
   >>> dsn = 'host=%s port=%s dbname=%s user=%s' % (db_conf['host'], db_conf['port'], db_conf['database'], db_conf['user'])
 
-  >>> name = 'polygons'
   >>> params = {
   ...   'type': 'PostGIS',
-  ...   'title': 'Polygons',
-  ...   'abstract': 'Polygons',
-  ...   'schema': 'gis',
-  ...   'layer': 'polygons',
+  ...   'title': 'asset_geom',
+  ...   'abstract': 'Asset Geometry',
+  ...   'schema': 'test_featureserver',
+  ...   'layer': 'asset_geom',
   ...   'fid': 'ogc_fid',
   ...   'geometry': 'wkb_geometry',
   ...   'srid': '27700',
@@ -21,48 +20,116 @@
   ...   'dsn': dsn
   ... }
 
-  >>> ds = PostGIS('name', **params)
-  >>> fs = Server({'polygons': ds})
+  >>> pg_table = PostGIS('asset_geom', **params)
+  >>> fs = Server({'asset_geom': pg_table})
 
-  >>> resp = fs.dispatchRequest(path_info="/polygons", params={'format':'geojson'}, base_path= "")
+  >>> resp = fs.dispatchRequest(path_info="/asset_geom", params={'format':'geojson'}, base_path= "")
   >>> resp.status_code
   '200 OK'
   >>> resp.getData()
   '{"crs": null, "type": "FeatureCollection", "features": []}'
 
-  >>> feat = '{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[384034.20737836004,399101.46551467496],[384032.20737728,399019.46547039493],[384101.70741481,399017.46546931495],[384101.7074148099,399040.46548173495],[384054.20738915994,399041.9654825449],[384055.7073899699,399100.46551413496],[384034.20737836004,399101.46551467496]]]},"properties":{"name":"lyra"}}'
-  >>> resp = fs.dispatchRequest(params={'format':'geojson'}, path_info="/polygons", base_path="", post_data=feat, request_method="POST")
+  >>> feat = '{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[384034.20737836004,399101.46551467496],[384032.20737728,399019.46547039493],[384101.70741481,399017.46546931495],[384101.7074148099,399040.46548173495],[384054.20738915994,399041.9654825449],[384055.7073899699,399100.46551413496],[384034.20737836004,399101.46551467496]]]},"properties":{"id":"2PP"}}'
+  >>> resp = fs.dispatchRequest(params={'format':'geojson'}, path_info="/asset_geom", base_path="", post_data=feat, request_method="POST")
   >>> resp.status_code
   '200 OK'
   >>> resp.getData()
   '{"status": "SUCCESS", "transactionSummary": {"totalUpdated": 0, "totalInserted": 1, "totalDeleted": 0, "totalReplaced": 0}, "replaceResults": [], "insertResults": [{"resourceId": 1, "handle": ""}], "updateResults": [], "deleteResults": []}'
 
-  >>> resp = fs.dispatchRequest(path_info="/polygons", params={'format':'geojson'}, base_path="")
+  >>> resp = fs.dispatchRequest(path_info="/asset_geom", params={'format':'geojson'}, base_path="")
   >>> resp.status_code
   '200 OK'
   >>> resp.getData()
-  '{"crs": null, "type": "FeatureCollection", "features": [{"geometry": {"type": "Polygon", "coordinates": [[[384034.20737836, 399101.465514675], [384032.20737728, 399019.465470395], [384101.70741481, 399017.465469315], [384101.70741481, 399040.465481735], [384054.20738916, 399041.965482545], [384055.70738997, 399100.465514135], [384034.20737836, 399101.465514675]]]}, "type": "Feature", "id": 1, "properties": {"name": "lyra"}}]}'
+  '{"crs": null, "type": "FeatureCollection", "features": [{"geometry": {"type": "Polygon", "coordinates": [[[384034.20737836, 399101.465514675], [384032.20737728, 399019.465470395], [384101.70741481, 399017.465469315], [384101.70741481, 399040.465481735], [384054.20738916, 399041.965482545], [384055.70738997, 399100.465514135], [384034.20737836, 399101.465514675]]]}, "type": "Feature", "id": 1, "properties": {"id": "2PP"}}]}'
 
-  >>> # Update attribute and geometry
-  >>> feat = '{"geometry": {"type": "Polygon", "coordinates": [[[384034, 399101], [384032, 399019], [384101, 399017], [384101, 399040], [384054, 399041], [384055, 399100], [384034, 399101]]]}, "type": "Feature", "id": "polygons.1", "properties": {"ogc_fid":"1","name": "Lyra"}}'
-  >>> resp = fs.dispatchRequest(params={'format':'geojson'}, path_info="/polygons/1", base_path="", post_data=feat, request_method="PUT")
+  >>> # Update geometry
+  >>> feat = '{"geometry": {"type": "Polygon", "coordinates": [[[384034, 399101], [384032, 399019], [384101, 399017], [384101, 399040], [384054, 399041], [384055, 399100], [384034, 399101]]]}, "type": "Feature", "id": "asset_geom.1", "properties": {"ogc_fid":"1","id": "2PP"}}'
+  >>> resp = fs.dispatchRequest(params={'format':'geojson'}, path_info="/asset_geom/1", base_path="", post_data=feat, request_method="PUT")
   >>> resp.status_code
   '200 OK'
 
   >>> resp.getData()
   '{"status": "SUCCESS", "transactionSummary": {"totalUpdated": 1, "totalInserted": 0, "totalDeleted": 0, "totalReplaced": 0}, "replaceResults": [], "insertResults": [], "updateResults": [{"resourceId": 1, "handle": ""}], "deleteResults": []}'
 
-  >>> resp = fs.dispatchRequest(path_info="/polygons", params={'format':'geojson'}, base_path= "")
+  >>> resp = fs.dispatchRequest(path_info="/asset_geom", params={'format':'geojson'}, base_path= "")
   >>> resp.status_code
   '200 OK'
   >>> resp.getData()
-  '{"crs": null, "type": "FeatureCollection", "features": [{"geometry": {"type": "Polygon", "coordinates": [[[384034.0, 399101.0], [384032.0, 399019.0], [384101.0, 399017.0], [384101.0, 399040.0], [384054.0, 399041.0], [384055.0, 399100.0], [384034.0, 399101.0]]]}, "type": "Feature", "id": 1, "properties": {"name": "Lyra"}}]}'
+  '{"crs": null, "type": "FeatureCollection", "features": [{"geometry": {"type": "Polygon", "coordinates": [[[384034.0, 399101.0], [384032.0, 399019.0], [384101.0, 399017.0], [384101.0, 399040.0], [384054.0, 399041.0], [384055.0, 399100.0], [384034.0, 399101.0]]]}, "type": "Feature", "id": 1, "properties": {"id": "2PP"}}]}'
 
-  >>> resp = fs.dispatchRequest(params={'format':'geojson'}, path_info="/polygons/1", base_path="", request_method="DELETE")
+  >>> resp = fs.dispatchRequest(params={'format':'geojson'}, path_info="/asset_geom/1", base_path="", request_method="DELETE")
   >>> resp.status_code
   '200 OK'
 
-  >>> resp = fs.dispatchRequest(path_info="/polygons", params={'format':'geojson'}, base_path= "")
+  >>> resp = fs.dispatchRequest(path_info="/asset_geom", params={'format':'geojson'}, base_path= "")
+  >>> resp.status_code
+  '200 OK'
+  >>> resp.getData()
+  '{"crs": null, "type": "FeatureCollection", "features": []}'
+
+Reset the database for next test
+
+  >>> reset()
+
+  >>> params = {
+  ...   'type': 'PostGIS',
+  ...   'title': 'assets',
+  ...   'abstract': 'Assets attributes and geometry',
+  ...   'schema': 'test_featureserver',
+  ...   'layer': 'assets',
+  ...   'fid': 'ogc_fid',
+  ...   'geometry': 'wkb_geometry',
+  ...   'srid': '27700',
+  ...   'srid_out': '27700',
+  ...   'geometry_type': 'Polygon',
+  ...   'dsn': dsn
+  ... }
+
+  >>> pg_table = PostGIS('assets', **params)
+  >>> fs = Server({'assets': pg_table})
+
+  >>> resp = fs.dispatchRequest(path_info="/assets", params={'format':'geojson'}, base_path= "")
+  >>> resp.status_code
+  '200 OK'
+  >>> resp.getData()
+  '{"crs": null, "type": "FeatureCollection", "features": []}'
+
+  >>> feat = '{"type":"Feature","geometry":{"type":"Polygon","coordinates":[[[384034.20737836004,399101.46551467496],[384032.20737728,399019.46547039493],[384101.70741481,399017.46546931495],[384101.7074148099,399040.46548173495],[384054.20738915994,399041.9654825449],[384055.7073899699,399100.46551413496],[384034.20737836004,399101.46551467496]]]},"properties":{"id":"2PP"}}'
+  >>> resp = fs.dispatchRequest(params={'format':'geojson'}, path_info="/assets", base_path="", post_data=feat, request_method="POST")
+  >>> resp.status_code
+  '200 OK'
+  >>> resp.getData()
+  '{"status": "SUCCESS", "transactionSummary": {"totalUpdated": 0, "totalInserted": 1, "totalDeleted": 0, "totalReplaced": 0}, "replaceResults": [], "insertResults": [{"resourceId": 1, "handle": ""}], "updateResults": [], "deleteResults": []}'
+
+  >>> resp = fs.dispatchRequest(path_info="/assets", params={'format':'geojson'}, base_path= "")
+  >>> resp.status_code
+  '200 OK'
+  >>> resp.getData()
+  '{"crs": null, "type": "FeatureCollection", "features": [{"geometry": {"type": "Polygon", "coordinates": [[[384034.20737836, 399101.465514675], [384032.20737728, 399019.465470395], [384101.70741481, 399017.465469315], [384101.70741481, 399040.465481735], [384054.20738916, 399041.965482545], [384055.70738997, 399100.465514135], [384034.20737836, 399101.465514675]]]}, "type": "Feature", "id": 1, "properties": {"name": "Head Office", "start_date": "2000-04-01", "id": "2PP"}}]}'
+
+  >>> # Update geometry
+  >>> feat = '{"geometry": {"type": "Polygon", "coordinates": [[[384034, 399101], [384032, 399019], [384101, 399017], [384101, 399040], [384054, 399041], [384055, 399100], [384034, 399101]]]}, "type": "Feature", "id": 1, "properties": {"name": "Head Office", "start_date": "2000-04-01", "id": "2PP"}}'
+  >>> resp = fs.dispatchRequest(params={'format':'geojson'}, path_info="/assets/1", base_path="", post_data=feat, request_method="PUT")
+  >>> resp.status_code
+  '200 OK'
+
+  >>> resp.getData()
+  '{"status": "SUCCESS", "transactionSummary": {"totalUpdated": 1, "totalInserted": 0, "totalDeleted": 0, "totalReplaced": 0}, "replaceResults": [], "insertResults": [], "updateResults": [{"resourceId": 1, "handle": ""}], "deleteResults": []}'
+
+  >>> resp = fs.dispatchRequest(path_info="/assets", params={'format':'geojson'}, base_path= "")
+  >>> resp.status_code
+  '200 OK'
+  >>> resp.getData()
+  '{"crs": null, "type": "FeatureCollection", "features": [{"geometry": {"type": "Polygon", "coordinates": [[[384034.0, 399101.0], [384032.0, 399019.0], [384101.0, 399017.0], [384101.0, 399040.0], [384054.0, 399041.0], [384055.0, 399100.0], [384034.0, 399101.0]]]}, "type": "Feature", "id": 1, "properties": {"name": "Head Office", "start_date": "2000-04-01", "id": "2PP"}}]}'
+
+  >>> resp = fs.dispatchRequest(params={'format':'geojson'}, path_info="/assets/1", base_path="", request_method="DELETE")
+  >>> resp.status_code
+  '200 OK'
+
+  >>> resp.getData()
+  '{"status": "SUCCESS", "transactionSummary": {"totalUpdated": 0, "totalInserted": 0, "totalDeleted": 1, "totalReplaced": 0}, "replaceResults": [], "insertResults": [], "updateResults": [], "deleteResults": [{"resourceId": 1, "handle": ""}]}'
+
+  >>> resp = fs.dispatchRequest(path_info="/assets", params={'format':'geojson'}, base_path= "")
   >>> resp.status_code
   '200 OK'
   >>> resp.getData()

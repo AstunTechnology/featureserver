@@ -10,6 +10,7 @@ import sys
 from os.path import dirname
 
 optionflags = (
+               doctest.REPORT_ONLY_FIRST_FAILURE |
                doctest.NORMALIZE_WHITESPACE |
                doctest.ELLIPSIS)
 

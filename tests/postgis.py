@@ -26,11 +26,16 @@ def setup():
     db_con = psycopg2.connect(**db_conf)
     # Commit changes immediately to the database
     db_con.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+    reset()
+    return (db, db_con, db_conf)
+
+
+def reset():
+    """ Runs the setup sql that should reset the database to a known state """
     with db_con.cursor() as cur:
         # Create the initial database structure (roles, schemas, tables etc.)
         # basically anything that doesn't change
         cur.execute(open('./tests/postgis_setup.sql').read())
-    return (db, db_con, db_conf)
 
 
 def teardown():
