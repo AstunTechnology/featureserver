@@ -86,7 +86,7 @@ class Server (object):
         objclass = getattr(module, type)
         for opt in config.options(section):
             objargs[opt] = config.get(section, opt)
-        if module_type is 'DataSource':
+        if module_type == 'DataSource':
             return objclass(section, **objargs)
         else:
             return objclass(**objargs)
