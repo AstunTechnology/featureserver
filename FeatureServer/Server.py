@@ -400,9 +400,8 @@ class Server (object):
 
                 date = time.strftime("%a %b %d, %Y  %I:%M:%S %p", time.localtime(float(data[4])))
                 output += '{"Workspace":"'+data[0]+'","LastAccess":"' + date  + '"},'
-
-            if len(data) > 0:
-                output = output[:-1]
+                if len(data) > 0:
+                    output = output[:-1]
 
             output += "]}"
             if "callback" in params:
