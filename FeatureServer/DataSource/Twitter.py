@@ -110,8 +110,8 @@ class Twitter (DataSource):
                     break
                 value = value[key]
 
-            if type(value) is not dict and type(value) is not list:
-                if type(value) is str:
+            if not isinstance(value, dict) and not isinstance(value, list):
+                if isinstance(value, str):
                     props[attribute] = value
                 else:
                     props[attribute] = str(str(value), self.encoding)
@@ -147,7 +147,7 @@ class Twitter (DataSource):
     def get_nodes(self, key, tweet, path):
         nodes = []
         
-        if type(tweet) is dict:
+        if isinstance(tweet, dict):
             for key in list(tweet.keys()):
                 if key not in self.geo_keys:
                     childs = self.get_nodes(key, tweet[key], "%s.%s" % (path, key))

@@ -27,13 +27,13 @@ class TransactionResponse(object):
         return self.summary
     
     def addResult(self, actionResult):
-        if type(actionResult) is InsertResult:
+        if isinstance(actionResult, InsertResult):
             self.addInsertResult(actionResult)
-        elif type(actionResult) is UpdateResult:
+        elif isinstance(actionResult, UpdateResult):
             self.addUpdateResult(actionResult)
-        elif type(actionResult) is DeleteResult:
+        elif isinstance(actionResult, DeleteResult):
             self.addDeleteResult(actionResult)
-        elif type(actionResult) is ReplaceResult:
+        elif isinstance(actionResult, ReplaceResult):
             self.addReplaceResult(actionResult)
         
     

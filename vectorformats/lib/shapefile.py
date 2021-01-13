@@ -127,7 +127,7 @@ class Reader:
         self.__dbfHdrLength = 0
         # See if a shapefile name was passed as an argument
         if len(args) > 0:
-            if type(args[0]) is type("stringTest"):
+            if isinstance(args[0], type("stringTest")):
                 self.load(args[0])
                 return
         if "shp" in list(kwargs.keys()):
@@ -1115,7 +1115,7 @@ class Reader:
         self.__dbfHdrLength = 0
         # See if a shapefile name was passed as an argument
         if len(args) > 0:
-            if type(args[0]) is type("stringTest"):
+            if isinstance(args[0], type("stringTest")):
                 self.load(args[0])
                 return
         if "shp" in list(kwargs.keys()):

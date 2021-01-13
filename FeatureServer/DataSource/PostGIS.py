@@ -128,9 +128,9 @@ class PostGIS (DataSource):
     def feature_values (self, feature):
         props = copy.deepcopy(feature.properties)
         for key, val in props.items():
-            if type(val) is str: ### b/c psycopg1 doesn't quote unicode
+            if isinstance(val, str): ### b/c psycopg1 doesn't quote unicode
                 props[key] = val.encode(self.encoding)
-            if type(val)  is dict:
+            if isinstance(val, dict):
                 props[key] = val['value']
         return props
 
