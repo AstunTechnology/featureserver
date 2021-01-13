@@ -41,8 +41,8 @@ class AppEngineGeoModel(DataSource):
         if self.model == None:
             self.model = FSModel
 
-        self.excluded_fields = ['geometry','location']
-        self.excluded_fields.extend(['location_geocell_' + str(x) for x in range(1,14)])
+        self.excluded_fields = ['geometry', 'location']
+        self.excluded_fields.extend(['location_geocell_' + str(x) for x in range(1, 14)])
  
     def get_keyname(self, id):
         return 'kn_' + str(id)
@@ -52,13 +52,13 @@ class AppEngineGeoModel(DataSource):
         coords = action.feature.geometry['coordinates']
         for key, value in list(action.feature.properties.items()):
             props[str(key)] = value
-        props['location'] = db.GeoPt(coords[1],coords[0])
+        props['location'] = db.GeoPt(coords[1], coords[0])
         obj = self.model(**props)
         obj.geometry = to_wkt(action.feature.geometry)
         try:
             obj.update_location()
         except:
-            raise Exception(str([props['location'],obj.location]))
+            raise Exception(str([props['location'], obj.location]))
         try: obj.save()
         except: obj.save()
         if not action.id: 
@@ -108,7 +108,7 @@ class AppEngineGeoModel(DataSource):
                         
             if action.bbox: 
                 #geocell likes N,E,S,W bbox with 
-                W,S,E,N = action.bbox
+                W, S, E, N = action.bbox
                 #also needs to be valid wgs84 coords
                 W = max(W, -180)
                 E = min(E, 180)
@@ -116,7 +116,7 @@ class AppEngineGeoModel(DataSource):
                 N = min(N, 90)
                 obj_list = self.model.bounding_box_fetch(
                     obj_list, 
-                    geotypes.Box(N,E,S,W),
+                    geotypes.Box(N, E, S, W),
                     max_results=max_features)
                     
         return_list = []

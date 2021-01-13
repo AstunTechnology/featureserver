@@ -85,7 +85,7 @@ class ComparisonOperatorTestCase(unittest.TestCase):
 
 class ComparisonOperatorTestSuite(unittest.TestSuite):
     def __init__(self):
-        unittest.TestSuite.__init__(self,list(map(ComparisonOperatorTestCase,
+        unittest.TestSuite.__init__(self, list(map(ComparisonOperatorTestCase,
                                                      ("testComparisonOperators",
                                                       "testAndOrCombination"))))
 

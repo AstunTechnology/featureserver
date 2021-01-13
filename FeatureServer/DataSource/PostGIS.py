@@ -428,7 +428,7 @@ class PostGIS (DataSource):
             cursor.execute(sql)
             box = str(cursor.fetchone()[0]).strip()
             # returns 'BOX(minx, miny, maxx, maxy)'
-            result = box[4:-1].replace(',',' ')
+            result = box[4:-1].replace(',', ' ')
             self.db.commit()
         except:
             pass

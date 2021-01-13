@@ -226,13 +226,13 @@ class Reader:
         if shapeType == 0:
             record.points = []
         # All shape types capable of having a bounding box
-        elif shapeType in (3,5,8,13,15,18,23,25,28,31):
+        elif shapeType in (3, 5, 8, 13, 15, 18, 23, 25, 28, 31):
             record.bbox = _Array('d', unpack("<4d", f.read(32)))
         # Shape types with parts
-        if shapeType in (3,5,13,15,23,25,31):
+        if shapeType in (3, 5, 13, 15, 23, 25, 31):
             nParts = unpack("<i", f.read(4))[0]
         # Shape types with points
-        if shapeType in (3,5,8,13,15,23,25,31):
+        if shapeType in (3, 5, 8, 13, 15, 23, 25, 31):
             nPoints = unpack("<i", f.read(4))[0]
         # Read parts
         if nParts:
@@ -244,11 +244,11 @@ class Reader:
         if nPoints:
             record.points = [_Array('d', unpack("<2d", f.read(16))) for p in range(nPoints)]
         # Read z extremes and values
-        if shapeType in (13,15,18,31):
+        if shapeType in (13, 15, 18, 31):
             (zmin, zmax) = unpack("<2d", f.read(16))
             record.z = _Array('d', unpack("<%sd" % nPoints, f.read(nPoints * 8)))
         # Read m extremes and values
-        if shapeType in (13,15,18,23,25,28,31):
+        if shapeType in (13, 15, 18, 23, 25, 28, 31):
             (mmin, mmax) = unpack("<2d", f.read(16))
             # Measure values less than -10e38 are nodata values according to the spec
             record.m = []
@@ -258,13 +258,13 @@ class Reader:
                 else:
                     record.m.append(None)
         # Read a single point
-        if shapeType in (1,11,21):
+        if shapeType in (1, 11, 21):
             record.points = [_Array('d', unpack("<2d", f.read(16)))]
         # Read a single Z value
         if shapeType == 11:
             record.z = unpack("<d", f.read(8))
         # Read a single M value
-        if shapeType in (11,21):
+        if shapeType in (11, 21):
             record.m = unpack("<d", f.read(8))
         return record
 
@@ -469,21 +469,21 @@ class Writer:
             #if self.shapeType not in (0,1):
             #       nParts = len(s.parts)
             #       nPoints = len(s.points)
-            if hasattr(s,'parts'):
+            if hasattr(s, 'parts'):
                 nParts = len(s.parts)
-            if hasattr(s,'points'):
+            if hasattr(s, 'points'):
                 nPoints = len(s.points)
             # All shape types capable of having a bounding box
-            if self.shapeType in (3,5,8,13,15,18,23,25,28,31):
+            if self.shapeType in (3, 5, 8, 13, 15, 18, 23, 25, 28, 31):
                 size += 32
             # Shape types with parts
-            if self.shapeType in (3,5,13,15,23,25,31):
+            if self.shapeType in (3, 5, 13, 15, 23, 25, 31):
                 # Parts count
                 size += 4
                 # Parts index array
                 size += nParts * 4
             # Shape types with points
-            if self.shapeType in (3,5,8,13,15,23,25,31):
+            if self.shapeType in (3, 5, 8, 13, 15, 23, 25, 31):
                 # Points count
                 size += 4
                 # Points array
@@ -492,25 +492,25 @@ class Writer:
             if self.shapeType == 31:
                 size += nParts * 4
             # Calc z extremes and values
-            if self.shapeType in (13,15,18,31):
+            if self.shapeType in (13, 15, 18, 31):
                 # z extremes
                 size += 16
                 # z array
                 size += 8 * nPoints
             # Calc m extremes and values
-            if self.shapeType in (23,25,31):
+            if self.shapeType in (23, 25, 31):
                 # m extremes
                 size += 16
                 # m array
                 size += 8 * nPoints
             # Calc a single point
-            if self.shapeType in (1,11,21):
+            if self.shapeType in (1, 11, 21):
                 size += 16
             # Calc a single Z value
             if self.shapeType == 11:
                 size += 8
             # Calc a single M value
-            if self.shapeType in (11,21):
+            if self.shapeType in (11, 21):
                 size += 8
         # Calculate size as 16-bit words
         size //= 2
@@ -570,7 +570,7 @@ class Writer:
         f = self.__getFileObj(fileObj)
         f.seek(0)
         # File code, Unused bytes
-        f.write(pack(">6i", 9994,0,0,0,0,0))
+        f.write(pack(">6i", 9994, 0, 0, 0, 0, 0))
         # File length (Bytes / 2 = 16-bit words)
         if headerType == 'shp':
             f.write(pack(">i", self.__shpFileLength()))
@@ -585,7 +585,7 @@ class Writer:
             except error:
                 raise ShapefileException("Failed to write shapefile bounding box. Floats required.")
         else:
-            f.write(pack("<4d", 0,0,0,0))
+            f.write(pack("<4d", 0, 0, 0, 0))
         # Elevation
         z = self.zbox()
         # Measure
@@ -640,21 +640,21 @@ class Writer:
             # Shape Type
             f.write(pack("<i", s.shapeType))
             # All shape types capable of having a bounding box
-            if s.shapeType in (3,5,8,13,15,18,23,25,28,31):
+            if s.shapeType in (3, 5, 8, 13, 15, 18, 23, 25, 28, 31):
                 try:
                     f.write(pack("<4d", *self.__bbox([s])))
                 except error:
                     raise ShapefileException("Falied to write bounding box for record %s. Expected floats." % recNum)
             # Shape types with parts
-            if s.shapeType in (3,5,13,15,23,25,31):
+            if s.shapeType in (3, 5, 13, 15, 23, 25, 31):
                 # Number of parts
                 f.write(pack("<i", len(s.parts)))
             # Shape types with multiple points per record
-            if s.shapeType in (3,5,8,13,15,23,25,31):
+            if s.shapeType in (3, 5, 8, 13, 15, 23, 25, 31):
                 # Number of points
                 f.write(pack("<i", len(s.points)))
             # Write part indexes
-            if s.shapeType in (3,5,13,15,23,25,31):
+            if s.shapeType in (3, 5, 13, 15, 23, 25, 31):
                 for p in s.parts:
                     f.write(pack("<i", p))
             # Part types for Multipatch (31)
@@ -662,13 +662,13 @@ class Writer:
                 for pt in s.partTypes:
                     f.write(pack("<i", pt))
             # Write points for multiple-point records
-            if s.shapeType in (3,5,8,13,15,23,25,31):
+            if s.shapeType in (3, 5, 8, 13, 15, 23, 25, 31):
                 try:
                     [f.write(pack("<2d", *p[:2])) for p in s.points]
                 except error:
                     raise ShapefileException("Failed to write points for record %s. Expected floats." % recNum)
             # Write z extremes and values
-            if s.shapeType in (13,15,18,31):
+            if s.shapeType in (13, 15, 18, 31):
                 try:
                     f.write(pack("<2d", *self.__zbox([s])))
                 except error:
@@ -678,7 +678,7 @@ class Writer:
                 except error:
                     raise ShapefileException("Failed to write elevation values for record %s. Expected floats." % recNum)
             # Write m extremes and values
-            if s.shapeType in (23,25,31):
+            if s.shapeType in (23, 25, 31):
                 try:
                     f.write(pack("<2d", *self.__mbox([s])))
                 except error:
@@ -688,7 +688,7 @@ class Writer:
                 except error:
                     raise ShapefileException("Failed to write measure values for record %s. Expected floats" % recNum)
             # Write a single point
-            if s.shapeType in (1,11,21):
+            if s.shapeType in (1, 11, 21):
                 try:
                     f.write(pack("<2d", s.points[0][0], s.points[0][1]))
                 except error:
@@ -700,7 +700,7 @@ class Writer:
                 except error:
                     raise ShapefileException("Failed to write elevation value for record %s. Expected floats." % recNum)
             # Write a single M value
-            if s.shapeType in (11,21):
+            if s.shapeType in (11, 21):
                 try:
                     f.write(pack("<1d", s.points[0][3]))
                 except error:
@@ -1214,13 +1214,13 @@ class Reader:
         if shapeType == 0:
             record.points = []
         # All shape types capable of having a bounding box
-        elif shapeType in (3,5,8,13,15,18,23,25,28,31):
+        elif shapeType in (3, 5, 8, 13, 15, 18, 23, 25, 28, 31):
             record.bbox = _Array('d', unpack("<4d", f.read(32)))
         # Shape types with parts
-        if shapeType in (3,5,13,15,23,25,31):
+        if shapeType in (3, 5, 13, 15, 23, 25, 31):
             nParts = unpack("<i", f.read(4))[0]
         # Shape types with points
-        if shapeType in (3,5,8,13,15,23,25,31):
+        if shapeType in (3, 5, 8, 13, 15, 23, 25, 31):
             nPoints = unpack("<i", f.read(4))[0]
         # Read parts
         if nParts:
@@ -1232,11 +1232,11 @@ class Reader:
         if nPoints:
             record.points = [_Array('d', unpack("<2d", f.read(16))) for p in range(nPoints)]
         # Read z extremes and values
-        if shapeType in (13,15,18,31):
+        if shapeType in (13, 15, 18, 31):
             (zmin, zmax) = unpack("<2d", f.read(16))
             record.z = _Array('d', unpack("<%sd" % nPoints, f.read(nPoints * 8)))
         # Read m extremes and values
-        if shapeType in (13,15,18,23,25,28,31):
+        if shapeType in (13, 15, 18, 23, 25, 28, 31):
             (mmin, mmax) = unpack("<2d", f.read(16))
             # Measure values less than -10e38 are nodata values according to the spec
             record.m = []
@@ -1246,13 +1246,13 @@ class Reader:
                 else:
                     record.m.append(None)
         # Read a single point
-        if shapeType in (1,11,21):
+        if shapeType in (1, 11, 21):
             record.points = [_Array('d', unpack("<2d", f.read(16)))]
         # Read a single Z value
         if shapeType == 11:
             record.z = unpack("<d", f.read(8))
         # Read a single M value
-        if shapeType in (11,21):
+        if shapeType in (11, 21):
             record.m = unpack("<d", f.read(8))
         return record
 
@@ -1457,21 +1457,21 @@ class Writer:
             #if self.shapeType not in (0,1):
             #       nParts = len(s.parts)
             #       nPoints = len(s.points)
-            if hasattr(s,'parts'):
+            if hasattr(s, 'parts'):
                 nParts = len(s.parts)
-            if hasattr(s,'points'):
+            if hasattr(s, 'points'):
                 nPoints = len(s.points)
             # All shape types capable of having a bounding box
-            if self.shapeType in (3,5,8,13,15,18,23,25,28,31):
+            if self.shapeType in (3, 5, 8, 13, 15, 18, 23, 25, 28, 31):
                 size += 32
             # Shape types with parts
-            if self.shapeType in (3,5,13,15,23,25,31):
+            if self.shapeType in (3, 5, 13, 15, 23, 25, 31):
                 # Parts count
                 size += 4
                 # Parts index array
                 size += nParts * 4
             # Shape types with points
-            if self.shapeType in (3,5,8,13,15,23,25,31):
+            if self.shapeType in (3, 5, 8, 13, 15, 23, 25, 31):
                 # Points count
                 size += 4
                 # Points array
@@ -1480,25 +1480,25 @@ class Writer:
             if self.shapeType == 31:
                 size += nParts * 4
             # Calc z extremes and values
-            if self.shapeType in (13,15,18,31):
+            if self.shapeType in (13, 15, 18, 31):
                 # z extremes
                 size += 16
                 # z array
                 size += 8 * nPoints
             # Calc m extremes and values
-            if self.shapeType in (23,25,31):
+            if self.shapeType in (23, 25, 31):
                 # m extremes
                 size += 16
                 # m array
                 size += 8 * nPoints
             # Calc a single point
-            if self.shapeType in (1,11,21):
+            if self.shapeType in (1, 11, 21):
                 size += 16
             # Calc a single Z value
             if self.shapeType == 11:
                 size += 8
             # Calc a single M value
-            if self.shapeType in (11,21):
+            if self.shapeType in (11, 21):
                 size += 8
         # Calculate size as 16-bit words
         size //= 2
@@ -1558,7 +1558,7 @@ class Writer:
         f = self.__getFileObj(fileObj)
         f.seek(0)
         # File code, Unused bytes
-        f.write(pack(">6i", 9994,0,0,0,0,0))
+        f.write(pack(">6i", 9994, 0, 0, 0, 0, 0))
         # File length (Bytes / 2 = 16-bit words)
         if headerType == 'shp':
             f.write(pack(">i", self.__shpFileLength()))
@@ -1573,7 +1573,7 @@ class Writer:
             except error:
                 raise ShapefileException("Failed to write shapefile bounding box. Floats required.")
         else:
-            f.write(pack("<4d", 0,0,0,0))
+            f.write(pack("<4d", 0, 0, 0, 0))
         # Elevation
         z = self.zbox()
         # Measure
@@ -1628,21 +1628,21 @@ class Writer:
             # Shape Type
             f.write(pack("<i", s.shapeType))
             # All shape types capable of having a bounding box
-            if s.shapeType in (3,5,8,13,15,18,23,25,28,31):
+            if s.shapeType in (3, 5, 8, 13, 15, 18, 23, 25, 28, 31):
                 try:
                     f.write(pack("<4d", *self.__bbox([s])))
                 except error:
                     raise ShapefileException("Falied to write bounding box for record %s. Expected floats." % recNum)
             # Shape types with parts
-            if s.shapeType in (3,5,13,15,23,25,31):
+            if s.shapeType in (3, 5, 13, 15, 23, 25, 31):
                 # Number of parts
                 f.write(pack("<i", len(s.parts)))
             # Shape types with multiple points per record
-            if s.shapeType in (3,5,8,13,15,23,25,31):
+            if s.shapeType in (3, 5, 8, 13, 15, 23, 25, 31):
                 # Number of points
                 f.write(pack("<i", len(s.points)))
             # Write part indexes
-            if s.shapeType in (3,5,13,15,23,25,31):
+            if s.shapeType in (3, 5, 13, 15, 23, 25, 31):
                 for p in s.parts:
                     f.write(pack("<i", p))
             # Part types for Multipatch (31)
@@ -1650,13 +1650,13 @@ class Writer:
                 for pt in s.partTypes:
                     f.write(pack("<i", pt))
             # Write points for multiple-point records
-            if s.shapeType in (3,5,8,13,15,23,25,31):
+            if s.shapeType in (3, 5, 8, 13, 15, 23, 25, 31):
                 try:
                     [f.write(pack("<2d", *p[:2])) for p in s.points]
                 except error:
                     raise ShapefileException("Failed to write points for record %s. Expected floats." % recNum)
             # Write z extremes and values
-            if s.shapeType in (13,15,18,31):
+            if s.shapeType in (13, 15, 18, 31):
                 try:
                     f.write(pack("<2d", *self.__zbox([s])))
                 except error:
@@ -1666,7 +1666,7 @@ class Writer:
                 except error:
                     raise ShapefileException("Failed to write elevation values for record %s. Expected floats." % recNum)
             # Write m extremes and values
-            if s.shapeType in (23,25,31):
+            if s.shapeType in (23, 25, 31):
                 try:
                     f.write(pack("<2d", *self.__mbox([s])))
                 except error:
@@ -1676,7 +1676,7 @@ class Writer:
                 except error:
                     raise ShapefileException("Failed to write measure values for record %s. Expected floats" % recNum)
             # Write a single point
-            if s.shapeType in (1,11,21):
+            if s.shapeType in (1, 11, 21):
                 try:
                     f.write(pack("<2d", s.points[0][0], s.points[0][1]))
                 except error:
@@ -1688,7 +1688,7 @@ class Writer:
                 except error:
                     raise ShapefileException("Failed to write elevation value for record %s. Expected floats." % recNum)
             # Write a single M value
-            if s.shapeType in (11,21):
+            if s.shapeType in (11, 21):
                 try:
                     f.write(pack("<1d", s.points[0][3]))
                 except error:

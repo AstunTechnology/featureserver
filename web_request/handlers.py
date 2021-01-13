@@ -167,10 +167,10 @@ def wsgi (dispatch_function, environ, start_response):
 
 
     except ApplicationException as error:
-        start_response(error.get_error(), [('Content-Type','text/plain')])
+        start_response(error.get_error(), [('Content-Type', 'text/plain')])
         return ["An error occurred: %s" % (str(error))]
     except Exception as error:
-        start_response("500 Internal Server Error", [('Content-Type','text/plain')])
+        start_response("500 Internal Server Error", [('Content-Type', 'text/plain')])
         return ["An error occurred: %s\n%s\n" % (
             str(error), 
             "".join(traceback.format_tb(sys.exc_info()[2])))]

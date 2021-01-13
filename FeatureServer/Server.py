@@ -38,7 +38,7 @@ else:
     # Windows doesn't always do the 'working directory' check correctly.
     if sys.platform == 'win32':
         workingdir = os.path.abspath(os.path.join(os.getcwd(), os.path.dirname(sys.argv[0])))
-        cfgfiles = (os.path.join(workingdir, "featureserver.cfg"), os.path.join(workingdir,"..","featureserver.cfg"))
+        cfgfiles = (os.path.join(workingdir, "featureserver.cfg"), os.path.join(workingdir, "..", "featureserver.cfg"))
     else:
         cfgfiles = ("featureserver.cfg", os.path.join("..", "featureserver.cfg"), "/etc/featureserver.cfg")
 
@@ -378,7 +378,7 @@ class Server (object):
 
             data = handler.getByKey(params['skey'])
             if len(data) > 0:
-                date = time.strftime("%a %b %d, %Y  %I:%M:%S %p",time.localtime(float(data[4])))
+                date = time.strftime("%a %b %d, %Y  %I:%M:%S %p", time.localtime(float(data[4])))
                 output += '{"Workspace":"'+data[0]+'","LastAccess":"' + date  + '"},'
 
             output += "]}"
@@ -398,7 +398,7 @@ class Server (object):
 
             for data in workspaces:
 
-                date = time.strftime("%a %b %d, %Y  %I:%M:%S %p",time.localtime(float(data[4])))
+                date = time.strftime("%a %b %d, %Y  %I:%M:%S %p", time.localtime(float(data[4])))
                 output += '{"Workspace":"'+data[0]+'","LastAccess":"' + date  + '"},'
 
             if len(data) > 0:

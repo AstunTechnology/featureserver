@@ -135,7 +135,7 @@ END;
         feature = action.feature
         bbox = feature.get_bbox()
 
-        columns = ", ".join([self.geom_col,'xmin,ymin,xmax,ymax'])
+        columns = ", ".join([self.geom_col, 'xmin,ymin,xmax,ymax'])
         values = [WKT.to_wkt(feature.geometry)] + list(bbox) 
         sql = "INSERT INTO \"%s\" (%s) VALUES (?,?,?,?,?)" % ( self.table, columns)
         cursor = self.db.cursor()
@@ -143,9 +143,9 @@ END;
         action.id = res.lastrowid
         #self.db.commit()
 
-        insert_tuples = [(res.lastrowid, k, v) for k,v in list(feature.properties.items())]
+        insert_tuples = [(res.lastrowid, k, v) for k, v in list(feature.properties.items())]
         sql = "INSERT INTO \"%s_attrs\" (feature_id, key, value) VALUES (?, ?, ?)" % (self.table,) 
-        cursor.executemany(sql,insert_tuples)
+        cursor.executemany(sql, insert_tuples)
 
         #self.db.commit()
         return self.select(action)

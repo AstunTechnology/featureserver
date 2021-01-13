@@ -141,7 +141,7 @@ class FlickrAPI:
         keys = list(params.keys())
         keys.sort()
         for key in keys:
-            items.append("%s%s" % (key,params[key]))
+            items.append("%s%s" % (key, params[key]))
         sign_string = "%s%s" % (self.api_secret, "".join(items))
         return md5.md5(sign_string).hexdigest()
 

@@ -61,11 +61,11 @@ class GeoAlchemy (DataSource):
         elif operator_name == 'ilike':
             return key.ilike('%'+value+'%')
         else:
-            return self.query_operators[operator_name](key,value)
+            return self.query_operators[operator_name](key, value)
 
     def bbox2wkt(self, bbox):
         return "POLYGON((%s %s, %s %s, %s %s, %s %s, %s %s))" % (bbox[1],
-        bbox[0],bbox[1],bbox[2],bbox[3],bbox[2],bbox[3],bbox[0],bbox[1],bbox[0])
+        bbox[0], bbox[1], bbox[2], bbox[3], bbox[2], bbox[3], bbox[0], bbox[1], bbox[0])
 
     def begin (self):
         pass

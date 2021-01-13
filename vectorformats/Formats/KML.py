@@ -61,7 +61,7 @@ class KML(Format):
             attr_value = value
             if isinstance(attr_value, str):
                 attr_value = str(attr_value, "utf-8")
-            if hasattr(attr_value,"replace"): 
+            if hasattr(attr_value, "replace"): 
                 attr_value = attr_value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             attr_fields.append( "<fs:%s>%s</fs:%s>" % (key, attr_value, key) )
         link = "" 
@@ -130,7 +130,7 @@ class KML(Format):
         polys = placemark_dom.getElementsByTagName("Polygon")
         if len(points):
             coords = points[0].getElementsByTagName("coordinates")[0].firstChild.nodeValue.strip().split(",")
-            feature.geometry = {'type':'Point', 'coordinates':list(map(float,coords))}
+            feature.geometry = {'type':'Point', 'coordinates':list(map(float, coords))}
         elif len(lines):
             coordstring = lines[0].getElementsByTagName("coordinates")[0].firstChild.nodeValue.strip()
             coords = coordstring.split(" ")
@@ -142,12 +142,12 @@ class KML(Format):
             outer = poly.getElementsByTagName("outerBoundaryIs")[0]
             outer_coordstring = outer.getElementsByTagName("coordinates")[0].firstChild.nodeValue.strip()
             outer_coords = outer_coordstring.split(" ")
-            outer_coords = [list(map(float,x.split(","))) for x in outer_coords]
+            outer_coords = [list(map(float, x.split(","))) for x in outer_coords]
             rings.append(outer_coords)
             inners = poly.getElementsByTagName("innerBoundaryIs")
             for inner in inners:
                 inner_coords = inner.getElementsByTagName("coordinates")[0].firstChild.nodeValue.strip().split(" ")
-                inner_coords = [list(map(float,x.split(","))) for x in inner_coords]
+                inner_coords = [list(map(float, x.split(","))) for x in inner_coords]
                 rings.append(inner_coords)
             
             feature.geometry = {'type':'Polygon', 'coordinates':rings}

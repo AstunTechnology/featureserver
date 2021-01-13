@@ -127,7 +127,7 @@ class LogicalOperatorTestCase(unittest.TestCase):
 
 class LogicalOperatorTestSuite(unittest.TestSuite):
     def __init__(self):
-        unittest.TestSuite.__init__(self,list(map(LogicalOperatorTestCase,
+        unittest.TestSuite.__init__(self, list(map(LogicalOperatorTestCase,
                                                      ("testAndOperator",
                                                       "testOrOperator",
                                                       "testNotOperator"))))

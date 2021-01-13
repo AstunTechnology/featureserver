@@ -24,7 +24,7 @@ class DXF(Format):
 
     def encode_feature(self, feature):
         if feature["geometry"]["type"] == "Point":
-            self._drawing.add(dxf.point(point=(feature["geometry"]["coordinates"][0],feature["geometry"]["coordinates"][1])))
+            self._drawing.add(dxf.point(point=(feature["geometry"]["coordinates"][0], feature["geometry"]["coordinates"][1])))
         
         elif feature["geometry"]["type"] == "LineString":
             polyline= dxf.polyline()

@@ -217,9 +217,9 @@ class Request (object):
         for action in result:
             for i in action:
                 data = i.to_dict()
-                for key,value in list(data['properties'].items()):
+                for key, value in list(data['properties'].items()):
                     if value and isinstance(value, str):
-                        data['properties'][key] = str(value,"utf-8")
+                        data['properties'][key] = str(value, "utf-8")
                 results.append(" * %s" % data)
         
         return ("text/plain", "\n".join(results), None)

@@ -69,7 +69,7 @@ class SpatialOperatorTestCase(unittest.TestCase):
 
 class SpatialOperatorTestSuite(unittest.TestSuite):
     def __init__(self):
-        unittest.TestSuite.__init__(self,list(map(SpatialOperatorTestCase,
+        unittest.TestSuite.__init__(self, list(map(SpatialOperatorTestCase,
                                                      ("testEquals",
                                                       "testBBOX"))))
 

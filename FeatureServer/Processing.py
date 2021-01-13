@@ -18,7 +18,7 @@ class Processing(object):
                 kwargs[arg] = self.config_args['%s_default' % arg]
  
         for arg in self.dispatch_args:
-            if "%s_locked" % arg in self.config_args and self.config_args['%s_locked' % arg].lower() in ['yes', 'y','true', '1']:
+            if "%s_locked" % arg in self.config_args and self.config_args['%s_locked' % arg].lower() in ['yes', 'y', 'true', '1']:
                 continue
             key = "process_%s_%s" % (self.name, arg)    
             if key in params:

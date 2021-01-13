@@ -40,9 +40,9 @@ class GeoJSON(Format):
         result_data = None
         for feature in features:
             data = self.encode_feature(feature)
-            for key,value in list(data['properties'].items()):
+            for key, value in list(data['properties'].items()):
                 if value and isinstance(value, str): 
-                    data['properties'][key] = str(value,"utf-8")
+                    data['properties'][key] = str(value, "utf-8")
             results.append(data)
         
         result_data = {

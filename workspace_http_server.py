@@ -16,15 +16,15 @@ local_path_location = None
 def local_app(environ, start_response):
     if environ['PATH_INFO'].startswith("/static/"):
         global local_path_location
-        path = environ['PATH_INFO'].replace("/static/","")
+        path = environ['PATH_INFO'].replace("/static/", "")
         path.lstrip("/") 
         mime =  mimetypes.guess_type(path)
         try:
             f = open(os.path.join(local_path_location, path))
-            start_response("200 OK", [("Content-Type",mime[0])])
+            start_response("200 OK", [("Content-Type", mime[0])])
             return [f.read()]
         except Exception as E:
-            start_response("404 Not Found", [("Content-Type","text/plain")])
+            start_response("404 Not Found", [("Content-Type", "text/plain")])
             return ["Not found: %s" % E]
             
     return wsgi_app_workspace(environ, start_response)
@@ -39,7 +39,7 @@ def run(port=8081, thread=False, local_path=""):
         class myServer(simple_server.WSGIServer):
             pass
 
-    httpd = myServer(('',port), simple_server.WSGIRequestHandler,)
+    httpd = myServer(('', port), simple_server.WSGIRequestHandler,)
     if local_path:
         global local_path_location
         local_path_location = local_path

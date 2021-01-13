@@ -190,7 +190,7 @@ class GeoRSS(Format):
             return {'type':'Polygon', 'coordinates':[coords]}
         elif type == "Point":    
             coords.reverse()
-            return {'type':'Point', 'coordinates':list(map(float,coords))}
+            return {'type':'Point', 'coordinates':list(map(float, coords))}
         elif type == "Box":  
             coords = [[[float(coords[1]), float(coords[0])], 
                        [float(coords[3]), float(coords[0])], 
