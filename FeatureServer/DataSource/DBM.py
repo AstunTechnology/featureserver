@@ -6,11 +6,11 @@ __version__ = "$Id: DBM.py 444 2008-03-19 01:35:35Z brentp $"
 from FeatureServer.DataSource import DataSource
 from FeatureServer.DataSource import Lock
 from FeatureServer.Service.Action import Action
-import anydbm
+import dbm
 import UserDict
 
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except ImportError:
     import pickle
 
@@ -49,7 +49,7 @@ class DBM (DataSource):
         return self.select(action)
     
     def insertUnique(self, feature):
-        if not feature.properties.has_key(self.unique):
+        if self.unique not in feature.properties:
            raise Exception("Unique key (%s) missing from feature." % self.unique)
         action = Action()
         action.attributes[self.unique] = feature.properties[self.unique]
@@ -103,7 +103,7 @@ class DBM (DataSource):
                 if action.attributes:
                     props = feature.properties
                     skip  = False
-                    for key, val in action.attributes.items():
+                    for key, val in list(action.attributes.items()):
                         if (key not in props and val is not None) or \
                            (key in props and str(props[key]) != val):
                             skip = True
@@ -133,12 +133,12 @@ class Recno (object):
         def __iter__ (self):
             return self
 
-        def next (self):
+        def __next__ (self):
             while True:
                 self.idx -= 1
                 if self.idx == 0 or self.idx == self.stopIdx:
                     raise StopIteration
-                if not self.recno.has_key(self.idx):
+                if self.idx not in self.recno:
                     continue
                 return self.idx
 
@@ -175,7 +175,7 @@ class Recno (object):
     def has_key (self, key):
         if not self.data:
             self.open()
-        return self.data.has_key(str(key))
+        return str(key) in self.data
 
     def sync (self, reopen=True):
         if not self.data:
@@ -184,7 +184,7 @@ class Recno (object):
         del self.data
         self.data = None
         if reopen:
-            self.data  = anydbm.open( self.file, "c" )
+            self.data  = dbm.open( self.file, "c" )
 
     def __del__ (self): 
         self.sync(False)
@@ -195,6 +195,6 @@ class Recno (object):
         return self.max
     
     def open(self):
-        self.data  = anydbm.open( self.file, "c" )
-        if self.data.has_key("_"):
+        self.data  = dbm.open( self.file, "c" )
+        if "_" in self.data:
             self.max = int(self.data["_"])

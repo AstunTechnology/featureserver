@@ -47,10 +47,10 @@ class Request (object):
         except NoLayerException as e:
             a = Action()
             
-            if params.has_key('service') and params['service'].lower() == 'wfs':
+            if 'service' in params and params['service'].lower() == 'wfs':
                 for layer in self.service.datasources:
                     self.datasources.append(layer)
-                if params.has_key('request'):
+                if 'request' in params:
                     a.request = params['request']
                 else:
                     a.request = "GetCapabilities"
@@ -61,8 +61,8 @@ class Request (object):
             return
 
         for datasource in self.datasources:
-            if not self.service.datasources.has_key(datasource):
-                raise LayerNotFoundException("Request", datasource, self.service.datasources.keys())
+            if datasource not in self.service.datasources:
+                raise LayerNotFoundException("Request", datasource, list(self.service.datasources.keys()))
 
         action = Action()
 
@@ -117,14 +117,14 @@ class Request (object):
                 #ds = self.service.datasources[self.datasource]
                 if hasattr(ds, 'queryable'):
                     queryable = ds.queryable.split(",")
-                elif params.has_key("queryable"):
+                elif "queryable" in params:
                     queryable = params['queryable'].split(",")
-                for key, value in params.items():
+                for key, value in list(params.items()):
                     qtype = None
                     if "__" in key:
                         key, qtype = key.split("__")
                     if key == 'bbox':
-                        action.bbox = map(float, value.split(","))
+                        action.bbox = list(map(float, value.split(",")))
                     elif key == "maxfeatures":
                         action.maxfeatures = int(value)
                     elif key == "startfeature":
@@ -137,7 +137,7 @@ class Request (object):
                         action.wfsrequest = WFSRequest()
                         try:
                             action.wfsrequest.parse(value)
-                        except Exception, E:
+                        except Exception as E:
                             ''' '''
 
                     elif key in queryable or key.upper() in queryable and hasattr(self.service.datasources[ds], 'query_action_types'):
@@ -155,14 +155,14 @@ class Request (object):
     
     def get_layer(self, path_info, params = {}):
         """Return layer based on path, or raise a NoLayerException."""
-        if params.has_key("typename"):
+        if "typename" in params:
             self.datasources = params["typename"].split(",")
             return
         
         path = path_info.split("/")
         if len(path) > 1 and path_info != '/':
             self.datasources.append(path[1])
-        if params.has_key("layer"):
+        if "layer" in params:
             self.datasources.append(params['layer'])
         
         if len(self.datasources) == 0:
@@ -217,9 +217,9 @@ class Request (object):
         for action in result:
             for i in action:
                 data = i.to_dict()
-                for key,value in data['properties'].items():
+                for key,value in list(data['properties'].items()):
                     if value and isinstance(value, str):
-                        data['properties'][key] = unicode(value,"utf-8")
+                        data['properties'][key] = str(value,"utf-8")
                 results.append(" * %s" % data)
         
         return ("text/plain", "\n".join(results), None)

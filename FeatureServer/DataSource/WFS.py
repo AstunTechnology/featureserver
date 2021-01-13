@@ -6,7 +6,7 @@ __version__ = "$Id: WFS.py 467 2008-05-18 06:02:16Z crschmidt $"
 from FeatureServer.DataSource import DataSource
 from FeatureServer.DataSource.OGR import OGR
 from vectorformats.Feature import Feature
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import tempfile
 import os
 
@@ -38,14 +38,14 @@ class WFS (DataSource):
 
         url = self.url
         if "?" not in url and "&" not in url: url += "?"
-        url += urllib.urlencode(param)
-        tmpfile, headers = urllib.urlretrieve(url)
+        url += urllib.parse.urlencode(param)
+        tmpfile, headers = urllib.request.urlretrieve(url)
         
-        import ogr
+        from . import ogr
         try:
             ds = OGR("GML", dsn = tmpfile, writable = 0)
             result = ds.select(action)
-        except ogr.OGRError, E:
+        except ogr.OGRError as E:
             raise Exception("OGR could not read the WFS result: %s. Data was: %s" % (E, open(tmpfile).read()))
         os.unlink(tmpfile)
         return result

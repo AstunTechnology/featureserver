@@ -9,7 +9,7 @@ import sys
 import time
 import os
 import traceback
-import ConfigParser
+import configparser
 from web_request.handlers import wsgi, mod_python, cgi
 from lxml import etree
 import cgi as cgimod
@@ -95,7 +95,7 @@ class Server (object):
     def _load (cls, *files):
         """Class method on Service class to load datasources
            and metadata from a configuration file."""
-        config = ConfigParser.ConfigParser()
+        config = configparser.ConfigParser()
         config.read(files)
 
         metadata = {}
@@ -110,7 +110,7 @@ class Server (object):
             if section.startswith("process_"):
                 try:
                     processes[section[8:]] = FeatureServer.Processing.loadFromSection(config, section)
-                except Exception, E:
+                except Exception as E:
                     pass
             else:
                 datasources[section] = cls.loadFromSection(config, section, 'DataSource')
@@ -156,7 +156,7 @@ class Server (object):
 
         format = ""
 
-        if params.has_key("format"):
+        if "format" in params:
             format = params['format']
             if format.lower() in content_types:
                 format = content_types[format.lower()]
@@ -170,19 +170,19 @@ class Server (object):
                     format = content_types[format.lower()]
                     found = True
 
-        if not found and not params.has_key("service") and post_data:
+        if not found and "service" not in params and post_data:
             try:
                 dom = etree.XML(post_data)
                 params['service'] = dom.get('service')
             except etree.ParseError: pass
 
-        if not found and not params.has_key("version") and post_data:
+        if not found and "version" not in params and post_data:
             try:
                 dom = etree.XML(post_data)
                 params['version'] = dom.get('version')
             except etree.ParseError: pass
 
-        if not found and not params.has_key("typename") and post_data:
+        if not found and "typename" not in params and post_data:
             try:
                 dom = etree.XML(post_data)
                 for key, value in cgimod.parse_qsl(post_data, keep_blank_values=True):
@@ -190,7 +190,7 @@ class Server (object):
                         params['typename'] = value
             except etree.ParseError: pass
 
-        if not found and params.has_key("service"):
+        if not found and "service" in params:
             format = params['service']
             if format.lower() in content_types:
                 format = content_types[format.lower()]
@@ -202,7 +202,7 @@ class Server (object):
                 found = True
 
         if not found and not format:
-            if self.metadata.has_key("default_service"):
+            if "default_service" in self.metadata:
                 format = self.metadata['default_service']
             else:
                 format = "WFS"
@@ -275,8 +275,8 @@ class Server (object):
 
                 if hasattr(datasource, 'processes'):
                     for process in datasource.processes.split(","):
-                        if not self.processes.has_key(process):
-                            raise Exception("Process %s configured incorrectly. Possible processes: \n\n%s" % (process, ",".join(self.processes.keys() )))
+                        if process not in self.processes:
+                            raise Exception("Process %s configured incorrectly. Possible processes: \n\n%s" % (process, ",".join(list(self.processes.keys()) )))
                         response = self.processes[process].dispatch(features=response, params=params)
                 if transactionResponse.summary.totalDeleted > 0 or transactionResponse.summary.totalInserted > 0 or transactionResponse.summary.totalUpdated > 0 or transactionResponse.summary.totalReplaced > 0:
                     response = transactionResponse
@@ -288,7 +288,7 @@ class Server (object):
             exceptionReport.add(e)
 
         if len(exceptionReport) > 0:
-            if self.metadata.has_key("default_exception"):
+            if "default_exception" in self.metadata:
                 service_module = __import__("Service.%s" % self.metadata['default_exception'], globals(), locals(), self.metadata['default_exception'])
                 service = getattr(service_module, self.metadata['default_exception'])
                 default_exception = service(self)
@@ -326,30 +326,30 @@ class Server (object):
         handler.removeExpired()
 
         # create workspace
-        if params.has_key("base"):
-            if params.has_key("request"):
+        if "base" in params:
+            if "request" in params:
 
                 identifier = ''
-                if params.has_key('id'):
+                if 'id' in params:
                     identifier = params['id']
 
                 short = handler.create(params['base'], params['request'], identifier)
 
                 output = ""
 
-                if params.has_key("callback"):
+                if "callback" in params:
                     output += params["callback"] + '('
 
                 output += '{"key":"' + short + '"}'
 
-                if params.has_key("callback"):
+                if "callback" in params:
                     output += ');'
 
                 return Response(data=output.decode("utf-8"), content_type="application/json; charset=utf-8", status_code="200 OK")
 
 
         # handle WFS request
-        elif params.has_key('key'):
+        elif 'key' in params:
 
             handler.updateLastAccess(params['key'])
             data = handler.getByKey(params['key'])
@@ -361,18 +361,18 @@ class Server (object):
                         self.datasources[layer].abstract += " :: " + str(data[0])
                         break
 
-                if params.has_key('request'):
+                if 'request' in params:
                     if params['request'].lower() == 'getfeature':
-                        if params.has_key('filter') <> True:
+                        if ('filter' in params) != True:
                             if post_data == None:
                                 params['filter'] = data[3]
 
                     return self.dispatchRequest(base_path, path_info, params, request_method, post_data, accepts)
 
         # check workspace by id
-        elif params.has_key('skey'):
+        elif 'skey' in params:
             output = ""
-            if params.has_key("callback"):
+            if "callback" in params:
                 output += params["callback"] + '('
             output += '{"workspaces":['
 
@@ -382,15 +382,15 @@ class Server (object):
                 output += '{"Workspace":"'+data[0]+'","LastAccess":"' + date  + '"},'
 
             output += "]}"
-            if params.has_key("callback"):
+            if "callback" in params:
                 output += ');'
 
             return Response(data=output.decode("utf-8"), content_type="application/json; charset=utf-8", status_code="200 OK")
 
         # check workspace by email
-        elif params.has_key('sid'):
+        elif 'sid' in params:
             output = ""
-            if params.has_key("callback"):
+            if "callback" in params:
                 output += params["callback"] + '('
             output += '{"workspaces":['
 
@@ -405,7 +405,7 @@ class Server (object):
                 output = output[:-1]
 
             output += "]}"
-            if params.has_key("callback"):
+            if "callback" in params:
                 output += ');'
 
             return Response(data=output.decode("utf-8"), content_type="application/json; charset=utf-8", status_code="200 OK")

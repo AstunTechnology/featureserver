@@ -11,7 +11,7 @@ try:
     from osgeo import ogr
     from osgeo import osr
 except:
-    import ogr
+    from . import ogr
     import osr
 
 class OGR (DataSource):
@@ -107,7 +107,7 @@ class OGR (DataSource):
                 self.layer.SetSpatialFilter(None)
             if action.attributes:
                 query = []
-                for keyval in action.attributes.items():
+                for keyval in list(action.attributes.items()):
                     query.append("( %s = '%s' )" % keyval)
                 query = " AND ".join(query)
             else:
@@ -170,7 +170,7 @@ class OGR (DataSource):
         
         ogrfeature = ogr.Feature(self.defn)
         ogrfeature.SetGeometryDirectly(ogrgeom)
-        for key, val in feature.properties.items():
+        for key, val in list(feature.properties.items()):
             key = ogrfeature.GetFieldIndex(key)
             ogrfeature.SetField( key, val )
 
@@ -225,7 +225,7 @@ class OGR (DataSource):
                 if self.attribute_cols and not key.lower() in self.attribute_cols:
                     continue
                 value = ogrfeat.GetField(n)
-                if isinstance(value, str): value = unicode(value, "utf-8")
+                if isinstance(value, str): value = str(value, "utf-8")
                 feat.properties[key] = value 
 
             result.append(feat)

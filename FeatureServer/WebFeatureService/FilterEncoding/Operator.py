@@ -39,7 +39,7 @@ class Operator(object):
         self.index = 0
         return self
     
-    def next(self):
+    def __next__(self):
         if self.index >= len(self):
             raise StopIteration
         child = self.children[self.index]

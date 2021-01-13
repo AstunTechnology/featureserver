@@ -9,7 +9,7 @@ from FeatureServer.DataSource.PostGIS import PostGIS
 from vectorformats.Formats import WKT
 
 try:
-    import cPickle
+    import pickle
 except ImportError:
     import Pickle as cPickle
 
@@ -110,24 +110,24 @@ class VersionedPostGIS (PostGIS):
         columns = [desc[0] for desc in cursor.description]
         features = []
         for row in result:
-            props = dict(zip(columns, row))
+            props = dict(list(zip(columns, row)))
             geom  = WKT.from_wkt(props['fs_binary_geom_col'])
-            if props.has_key(self.geom_col): del props[self.geom_col]
+            if self.geom_col in props: del props[self.geom_col]
             del props['fs_binary_geom_col']
             props.update(self._deserializeattrs(props['attrs']))
             del props['attrs']
             fid = props[self.fid_col]
             del props[self.fid_col]
-            for key, value in props.items():
+            for key, value in list(props.items()):
                 if isinstance(value, str): 
-                    props[key] = unicode(value, "utf-8")
+                    props[key] = str(value, "utf-8")
             features.append( Feature( fid, geom, self.geom_col, self.srid_out, props ) ) 
         return features
     
     def _serializeattrs(self, properties):
         import sys
-        print >>sys.stderr, properties
-        return cPickle.dumps(properties)
+        print(properties, file=sys.stderr)
+        return pickle.dumps(properties)
 
     def _deserializeattrs(self, attrstr):
-        return cPickle.loads(attrstr)
+        return pickle.loads(attrstr)

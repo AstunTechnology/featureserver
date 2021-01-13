@@ -2,8 +2,8 @@ from vectorformats.Feature import Feature
 from vectorformats.Formats.Format import Format
 from vectorformats.Formats.WKT import to_wkt, from_wkt
 
-import csv
-import StringIO
+from . import csv
+import io
 
 
 class CSV (Format):
@@ -23,7 +23,7 @@ class CSV (Format):
         'geometry,id "1,1",1 '
         """
         
-        s = StringIO.StringIO()
+        s = io.StringIO()
         w = csv.writer(s)
         
         if props == None:
@@ -34,7 +34,7 @@ class CSV (Format):
         
         if not fixed_props:
             for feature in features:
-                for key in feature.properties.keys():
+                for key in list(feature.properties.keys()):
                     if not key in props:
                         props.append(key)
         
@@ -54,9 +54,9 @@ class CSV (Format):
                     geom = to_wkt(feature.geometry)
                     #geom = ",".join(map(str, feature.geometry['coordinates']))
                     row.append(geom)
-                elif feature.properties.has_key(key):
+                elif key in feature.properties:
                     val = feature.properties[key]
-                    if isinstance(val, unicode):
+                    if isinstance(val, str):
                         val = val.encode("utf-8")
                     row.append(val)
                 else:
@@ -67,7 +67,7 @@ class CSV (Format):
 
 
     def encode_exception_report(self, exceptionReport):
-        s = StringIO.StringIO()
+        s = io.StringIO()
         w = csv.writer(s)
         
         w.writerow(["exceptionCode", "locator", "layer", "ExceptionText", "ExceptionDump"])

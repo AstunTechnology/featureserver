@@ -60,14 +60,14 @@ class GeoRSS(Format):
         
         title_node = doc.createElement("title")
         title = None
-        if feature.properties.has_key("title"):
+        if "title" in feature.properties:
             title = doc.createTextNode(feature.properties['title'])
         else:    
             title = doc.createTextNode("Feature #%s" % feature.id)
         title_node.appendChild(title)
         entry.appendChild(title_node)
         
-        if feature.properties.has_key('timestamp'):
+        if 'timestamp' in feature.properties:
             timestamp = feature.properties['timestamp']
             del feature.properties['timestamp']
             edited = doc.createElement("app:edited")
@@ -88,13 +88,13 @@ class GeoRSS(Format):
         desc_node.setAttribute("type", "html")
         description = ""
             
-        if feature.properties.has_key("description"):
+        if "description" in feature.properties:
             description = feature.properties['description']
         else:
             desc_fields = []
-            for key, value in feature.properties.items():
+            for key, value in list(feature.properties.items()):
                 if isinstance(value, str):
-                    value = unicode(value, "utf-8")
+                    value = str(value, "utf-8")
                 desc_fields.append( "<b>%s</b>: %s" % (key, value) )
             description = "%s" % ("<br />".join(desc_fields)) 
         desc_node.appendChild(doc.createTextNode(description))
@@ -106,12 +106,12 @@ class GeoRSS(Format):
             geo_node.appendChild(doc.createTextNode(coords))
         
         elif feature.geometry['type'] == "LineString":
-            coords = " ".join(map(lambda x: "%s %s" % (x[1], x[0]), feature.geometry['coordinates']))
+            coords = " ".join(["%s %s" % (x[1], x[0]) for x in feature.geometry['coordinates']])
             geo_node = doc.createElement("georss:line")
             geo_node.appendChild(doc.createTextNode(coords))
         
         else:
-            coords = " ".join(map(lambda x: "%s %s" % (x[1], x[0]), feature.geometry['coordinates'][0]))
+            coords = " ".join(["%s %s" % (x[1], x[0]) for x in feature.geometry['coordinates'][0]])
             geo_node = doc.createElement("georss:polygon")
             geo_node.appendChild(doc.createTextNode(coords))
             
@@ -162,7 +162,7 @@ class GeoRSS(Format):
     def decode(self, post_data):
         try:
             doc = m.parseString(post_data)
-        except Exception, E:
+        except Exception as E:
             raise Exception("Unable to parse GeoRSS. (%s)\nContent was: %s" % (E, post_data))
         entries = doc.getElementsByTagName("entry")
         if not entries:
@@ -183,14 +183,14 @@ class GeoRSS(Format):
            a FeatureServer internal geometry."""
         coords = coordinates.strip().replace(",", " ").split()
         if type == "LineString":
-            coords = [[float(coords[i+1]), float(coords[i])] for i in xrange(0, len(coords), 2)]
+            coords = [[float(coords[i+1]), float(coords[i])] for i in range(0, len(coords), 2)]
             return {'type':'LineString', 'coordinates':coords}
         elif type == "Polygon": 
-            coords = [[float(coords[i+1]), float(coords[i])] for i in xrange(0, len(coords), 2)]
+            coords = [[float(coords[i+1]), float(coords[i])] for i in range(0, len(coords), 2)]
             return {'type':'Polygon', 'coordinates':[coords]}
         elif type == "Point":    
             coords.reverse()
-            return {'type':'Point', 'coordinates':map(float,coords)}
+            return {'type':'Point', 'coordinates':list(map(float,coords))}
         elif type == "Box":  
             coords = [[[float(coords[1]), float(coords[0])], 
                        [float(coords[3]), float(coords[0])], 

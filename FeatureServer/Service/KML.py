@@ -27,7 +27,7 @@ class KML(Request):
 <atom:link rel="self" href="%s" type="application/vnd.google-earth.kml+xml" />""" % self.host]
 
         layers = self.service.datasources
-        for key in layers.keys():
+        for key in list(layers.keys()):
             results.append("""<NetworkLink>
         <name>%s</name>
         <open>0</open>

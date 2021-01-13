@@ -1,6 +1,6 @@
 import twill
 import twill.commands as tc
-from cStringIO import StringIO
+from io import StringIO
 #import wsgi_intercept.mechanize_intercept
 
 

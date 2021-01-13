@@ -34,7 +34,7 @@ class FilterEncoding (object):
         
         #add global namespaces - duplicate namespaces will be removed by parser.
         nsFilter = '<Filter'
-        for key, value in self.namespaces.iteritems():
+        for key, value in self.namespaces.items():
             nsFilter += ' xmlns:' + key + '="' + value + '"'
         self.xml = xml.replace('<Filter', nsFilter)
         
@@ -104,7 +104,7 @@ class FilterEncoding (object):
             node.createStatement(datasource)
 
     def getAttributes(self):
-        from FilterAttributes import FilterAttributes
+        from .FilterAttributes import FilterAttributes
         filter = FilterAttributes(self.dom)
         return filter.render()
 

@@ -1,14 +1,14 @@
 import sys
 import operator
 import os
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import simplejson
 import random
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 try:
-    import cStringIO as StringIO
+    import io as StringIO
 except:
-    import StringIO
+    import io
 
 from FeatureServer.Server import Server
 from FeatureServer.DataSource.SQLite import SQLite
@@ -27,8 +27,8 @@ def test_POST():
     random_y = random.random() * 10
     data['features'][0]['geometry']['coordinates'] = [random_x, random_x]
 
-    urllib.urlopen(url, simplejson.dumps(data)).read()
-    all_data = urllib.urlopen(url).read()
+    urllib.request.urlopen(url, simplejson.dumps(data)).read()
+    all_data = urllib.request.urlopen(url).read()
     all_features = simplejson.loads(all_data)
     f = sorted(all_features['features'], key=operator.itemgetter('id'))[-1]
     assert f['geometry']['coordinates'][0] == random_x

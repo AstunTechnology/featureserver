@@ -1,6 +1,6 @@
 
 from vectorformats.Formats.Format import Format
-import StringIO
+import io
 from dxfwrite import DXFEngine as dxf
 
 class DXF(Format):

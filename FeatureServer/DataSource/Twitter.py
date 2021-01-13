@@ -4,8 +4,8 @@ from FeatureServer.Exceptions.NoGeometryException import NoGeometryException
 
 import oauth2 as oauth
 
-import urllib
-import urlparse
+import urllib.request, urllib.parse, urllib.error
+import urllib.parse
 import simplejson
 import math
 
@@ -61,7 +61,7 @@ class Twitter (DataSource):
                     params['geocode'] = center + ',' + radius
                 
                 params['q'] = self.query
-                query = urllib.urlencode(params)
+                query = urllib.parse.urlencode(params)
                         
                 content = self.api.request('https://api.twitter.com/1.1/search/tweets.json?' + query, "GET")
                 features = self.encode_search_tweets(simplejson.loads(content))
@@ -111,10 +111,10 @@ class Twitter (DataSource):
                 value = value[key]
 
             if type(value) is not dict and type(value) is not list:
-                if type(value) is unicode:
+                if type(value) is str:
                     props[attribute] = value
                 else:
-                    props[attribute] = unicode(str(value), self.encoding)
+                    props[attribute] = str(str(value), self.encoding)
         
         return Feature( id=tweet["id"], geometry=geom, geometry_attr="geometry", srs=self.srid_out, props=props )
     
@@ -135,7 +135,7 @@ class Twitter (DataSource):
         nodes = []
         
         if self.attributes == '*':
-            for key in tweet.keys():
+            for key in list(tweet.keys()):
                 if key not in self.geo_keys:
                     childs = self.get_nodes(key, tweet[key], key)
                     nodes.extend(childs)
@@ -148,7 +148,7 @@ class Twitter (DataSource):
         nodes = []
         
         if type(tweet) is dict:
-            for key in tweet.keys():
+            for key in list(tweet.keys()):
                 if key not in self.geo_keys:
                     childs = self.get_nodes(key, tweet[key], "%s.%s" % (path, key))
                     nodes.extend(childs)

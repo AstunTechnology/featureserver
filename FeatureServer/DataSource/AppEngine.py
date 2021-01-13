@@ -34,7 +34,7 @@ class AppEngine(DataSource):
     
     def insert(self, action):
         props = {}
-        for key, value in action.feature.properties.items():
+        for key, value in list(action.feature.properties.items()):
             props[str(key)] = value
         obj = self.model(**props)
         obj.geometry = to_wkt(action.feature.geometry)
@@ -49,7 +49,7 @@ class AppEngine(DataSource):
     def update(self, action):
         obj = self.model.get_by_id(int(action.id))
         obj.geometry = to_wkt(action.feature.geometry)
-        for key, value in action.feature.properties.items():
+        for key, value in list(action.feature.properties.items()):
             setattr(obj, str(key), value)
         if geohash_support:
             bbox = action.feature.get_bbox()
@@ -83,7 +83,7 @@ class AppEngine(DataSource):
                     
             if action.attributes:
                 current_key = None
-                for key, value in action.attributes.items():
+                for key, value in list(action.attributes.items()):
                     if isinstance(value, dict):
                         obj_list.filter("%s %s" % (value['column'], self.query_action_string[value['type']]), value['value'])
                     else:

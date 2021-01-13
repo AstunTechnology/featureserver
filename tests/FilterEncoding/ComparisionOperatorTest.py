@@ -42,7 +42,7 @@ class ComparisonOperatorTestCase(unittest.TestCase):
             '<Filter><PropertyIsLike wildCard="*" singleChar="?" escapeChar="!"><ValueReference>highway</ValueReference><Literal>b?s_sto*</Literal></PropertyIsLike></Filter>' : "\"highway\" LIKE 'b_s_sto%%'"
         }
 
-        for fil, stmt in filters.iteritems():
+        for fil, stmt in filters.items():
             filterEncoding = fe.FilterEncoding(fil)
             filterEncoding.parse()
             self.assertEqual(stmt, filterEncoding.render(self.datasource))
@@ -77,7 +77,7 @@ class ComparisonOperatorTestCase(unittest.TestCase):
             "(\"shop\" = 'supermarket' AND \"name\" LIKE '_enner%%')"
         }
 
-        for fil, stmt in filters.iteritems():
+        for fil, stmt in filters.items():
             filterEncoding = fe.FilterEncoding(fil)
             filterEncoding.parse()
             self.assertEqual(stmt, filterEncoding.render(self.datasource))
@@ -85,9 +85,9 @@ class ComparisonOperatorTestCase(unittest.TestCase):
 
 class ComparisonOperatorTestSuite(unittest.TestSuite):
     def __init__(self):
-        unittest.TestSuite.__init__(self,map(ComparisonOperatorTestCase,
+        unittest.TestSuite.__init__(self,list(map(ComparisonOperatorTestCase,
                                                      ("testComparisonOperators",
-                                                      "testAndOrCombination")))
+                                                      "testAndOrCombination"))))
 
 def suite(): 
     suite = unittest.TestSuite()

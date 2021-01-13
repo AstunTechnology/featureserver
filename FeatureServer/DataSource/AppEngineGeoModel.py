@@ -50,7 +50,7 @@ class AppEngineGeoModel(DataSource):
     def insert(self, action):
         props = {}
         coords = action.feature.geometry['coordinates']
-        for key, value in action.feature.properties.items():
+        for key, value in list(action.feature.properties.items()):
             props[str(key)] = value
         props['location'] = db.GeoPt(coords[1],coords[0])
         obj = self.model(**props)
@@ -71,7 +71,7 @@ class AppEngineGeoModel(DataSource):
         obj = self.model.get_by_key_name(kn)
         obj.geometry = to_wkt(action.feature.geometry)
 
-        for key, value in action.feature.properties.items():
+        for key, value in list(action.feature.properties.items()):
             setattr(obj, str(key), value)
         obj.update_location()
         try: obj.save()
@@ -97,7 +97,7 @@ class AppEngineGeoModel(DataSource):
             obj_list = self.model.all()
             if action.attributes:
                 current_key = None
-                for key, value in action.attributes.items():
+                for key, value in list(action.attributes.items()):
                     if isinstance(value, dict):
                         obj_list = obj_list.filter("%s %s" % (value['column'], self.query_action_string[value['type']]), value['value'])
                     else:

@@ -8,22 +8,22 @@ from optparse import OptionParser
 def install(dest):
     try:
         f = open(dest, "w")
-    except IOError, E:
-        print "Unable to open destination file %s. Perhaps you need permission to write there?\n(Error was: %s)" % (dest, E)
+    except IOError as E:
+        print("Unable to open destination file %s. Perhaps you need permission to write there?\n(Error was: %s)" % (dest, E))
         sys.exit(1)
     
     try:    
         import pkg_resources
         filename = pkg_resources.resource_filename("FeatureServer", "featureserver.cfg")
         cfg = open(filename, "r")
-    except Exception, E:
-        print "Unable to open source file.\n(Error was: %s)" % (E)
+    except Exception as E:
+        print("Unable to open source file.\n(Error was: %s)" % (E))
         sys.exit(1)
         
     f.write(cfg.read())
     f.close()
     cfg.close()
-    print "Successfully copied file %s to %s." % (filename, dest)
+    print("Successfully copied file %s to %s." % (filename, dest))
     
 if __name__ == "__main__":
     parser = OptionParser(usage="""%prog [options] 

@@ -5,14 +5,14 @@ Created on Jul 30, 2011
 '''
 
 from vectorformats.Formats.Format import Format
-import StringIO
+import io
 from struct import pack
 import types
 
 class OV2(Format):
     
     def encode(self, features, **kwargs):
-        ov2Buffer = StringIO.StringIO()
+        ov2Buffer = io.StringIO()
         
         for feature in features:
             self.encode_feature(feature, ov2Buffer)
@@ -20,8 +20,8 @@ class OV2(Format):
         return ov2Buffer
         
     def encode_feature(self, feature, buffer):
-        if feature.properties.has_key('name'):
-            if isinstance(feature.properties['name'], types.NoneType):
+        if 'name' in feature.properties:
+            if isinstance(feature.properties['name'], type(None)):
                 buffer.write(self.getBinaryLine(str(feature.id), feature.geometry["coordinates"][0], feature.geometry["coordinates"][1]))
             else:
                 buffer.write(self.getBinaryLine(feature.properties['name'].encode('utf-8'), feature.geometry["coordinates"][0], feature.geometry["coordinates"][1]))

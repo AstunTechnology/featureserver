@@ -10,7 +10,7 @@ class GeoRSS(Request):
     def encode_metadata(self, action):
         layers = self.service.datasources
         layer_text = []
-        for layer in layers.keys():
+        for layer in list(layers.keys()):
             layer_text.append("<collection href='%s/%s/all.atom'><atom:title>%s</atom:title></collection>" % (self.host, layer, layer))
             
         action.metadata = """<?xml version="1.0" encoding="utf-8"?>

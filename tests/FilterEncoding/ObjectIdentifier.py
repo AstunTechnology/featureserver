@@ -28,7 +28,7 @@ class ObjectIdentifier(unittest.TestCase):
         self.datasource = PostGIS('all', **self.params)
         self.server = Server({'all': self.datasource})
         
-        for fil, stmt in self.filters.iteritems():
+        for fil, stmt in self.filters.items():
             filterEncoding = filter.FilterEncoding(fil)
             filterEncoding.parse()
             self.assertEqual(stmt, filterEncoding.render(self.datasource))

@@ -90,12 +90,12 @@ class PostGIS (DataSource):
         self.db.close()
 
     def column_names (self, feature):
-        return feature.properties.keys()
+        return list(feature.properties.keys())
 
     def value_formats (self, feature):
         values = ["%%(%s)s" % self.geom_col]
         values = []
-        for key, val in feature.properties.items():
+        for key, val in list(feature.properties.items()):
             valtype = type(val).__name__
             if valtype == "dict":
                 val['pred'] = "%%(%s)s" % (key,)
@@ -114,21 +114,21 @@ class PostGIS (DataSource):
                 if isinstance(pair[1], dict):
                     # Special Query: pair[0] is 'a', pair[1] is {'type', 'pred', 'value'}
                     # We build a Predicate here, then we replace pair[1] with pair[1] value below
-                    if pair[1].has_key('value'):
+                    if 'value' in pair[1]:
                         predicates.append('"%s" %s %s' % (pair[1]['column'],
                                                           self.query_action_sql[pair[1]['type']],
                                                           pair[1]['pred']))
 
                 else:
                     predicates.append('"%s" = %s' % pair)
-        if feature.geometry and feature.geometry.has_key("coordinates"):
+        if feature.geometry and "coordinates" in feature.geometry:
             predicates.append(" %s = ST_SetSRID('%s'::geometry, %s) " % (self.geom_col, WKT.to_wkt(feature.geometry), self.srid))
         return predicates
 
     def feature_values (self, feature):
         props = copy.deepcopy(feature.properties)
-        for key, val in props.iteritems():
-            if type(val) is unicode: ### b/c psycopg1 doesn't quote unicode
+        for key, val in props.items():
+            if type(val) is str: ### b/c psycopg1 doesn't quote unicode
                 props[key] = val.encode(self.encoding)
             if type(val)  is dict:
                 props[key] = val['value']
@@ -278,7 +278,7 @@ class PostGIS (DataSource):
             if action.attributes:
                 match = Feature(props = action.attributes)
                 filters = self.feature_predicates(match)
-                for key, value in action.attributes.items():
+                for key, value in list(action.attributes.items()):
                     if isinstance(value, dict):
                         attrs[key] = value['value']
                     else:
@@ -307,7 +307,7 @@ class PostGIS (DataSource):
                 fe_cols = action.wfsrequest.getAttributes()
                 ad_cols = self.getColumns()
 
-                fe_cols = filter(lambda x: x not in ad_cols, fe_cols)
+                fe_cols = [x for x in fe_cols if x not in ad_cols]
 
                 if len(fe_cols) > 0:
                     cols.extend(fe_cols)
@@ -336,7 +336,7 @@ class PostGIS (DataSource):
             try:
                 logging.debug(cursor.mogrify(sql, attrs))
                 cursor.execute(sql, attrs)
-            except Exception, e:
+            except Exception as e:
                 if e.pgcode[:2] == errorcodes.CLASS_SYNTAX_ERROR_OR_ACCESS_RULE_VIOLATION:
                     raise InvalidValueException(dump=e.pgerror,
                                                 layer=self.name,
@@ -347,7 +347,7 @@ class PostGIS (DataSource):
         columns = [desc[0] for desc in cursor.description]
         features = []
         for row in result:
-            props = dict(zip(columns, row))
+            props = dict(list(zip(columns, row)))
             if not props['fs_text_geom']:
                 continue
             geom  = WKT.from_wkt(props['fs_text_geom'])
@@ -356,9 +356,9 @@ class PostGIS (DataSource):
             if self.attribute_cols == '*':
                 del props[self.geom_col]
             del props['fs_text_geom']
-            for key, value in props.items():
+            for key, value in list(props.items()):
                 if isinstance(value, str):
-                        props[key] = unicode(value, self.encoding)
+                        props[key] = str(value, self.encoding)
                 elif (isinstance(value, datetime.datetime)
                       or isinstance(value, datetime.date)):
                     # stringify datetimes
@@ -366,7 +366,7 @@ class PostGIS (DataSource):
 
                 try:
                     if isinstance(value, decimal.Decimal):
-                            props[key] = unicode(str(value), self.encoding)
+                            props[key] = str(str(value), self.encoding)
                 except:
                     pass
 

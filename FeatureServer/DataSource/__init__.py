@@ -15,7 +15,7 @@ class DataSource (object):
     
     def __init__(self, name, **kwargs):
         self.name = name
-        for key, val in kwargs.iteritems():
+        for key, val in kwargs.items():
             setattr(self, key, val)
     def execute (self, feature, response=None):
         raise NotImplementedError
@@ -77,7 +77,7 @@ class Lock (object):
     def unlock (self):
         try:
             os.rmdir(self.lockfile)
-        except OSError, E:
+        except OSError as E:
             warnings.warn("unlock %s failed: %s" % (self.lockfile, str(E)))
 
     __del__ = unlock

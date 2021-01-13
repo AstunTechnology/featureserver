@@ -1,1 +1,1 @@
-from tests import run_doc_tests
+from .tests import run_doc_tests

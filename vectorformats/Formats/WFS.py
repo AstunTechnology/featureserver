@@ -32,13 +32,13 @@ class WFS(Format):
         layername = re.sub(r'\W', '_', self.layername)
 
         attr_fields = []
-        for key, value in feature.properties.items():
+        for key, value in list(feature.properties.items()):
             #key = re.sub(r'\W', '_', key)
             attr_value = value
             if hasattr(attr_value,"replace"):
                 attr_value = attr_value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             if isinstance(attr_value, str):
-                attr_value = unicode(attr_value, "utf-8")
+                attr_value = str(attr_value, "utf-8")
             attr_fields.append( "<fs:%s>%s</fs:%s>" % (key, attr_value, key) )
 
 
@@ -74,7 +74,7 @@ class WFS(Format):
             return "<gml:LineString><gml:coordinates decimal=\".\" cs=\",\" ts=\" \" srsName=\"%s\">%s</gml:coordinates></gml:LineString>" % (str(srs), coords)
             #return "<gml:curveProperty><gml:LineString srsDimension=\"2\" srsName=\"%s\"><gml:coordinates>%s</gml:coordinates></gml:LineString></gml:curveProperty>" % (str(srs), coords)
         elif geometry['type'] == "Polygon":
-            coords = " ".join(map(lambda x: ",".join(map(str, x)), geometry['coordinates'][0]))
+            coords = " ".join([",".join(map(str, x)) for x in geometry['coordinates'][0]])
             #out = """
             #    <gml:exterior>
             #        <gml:LinearRing>
@@ -92,7 +92,7 @@ class WFS(Format):
 
             inner_rings = []
             for inner_ring in geometry['coordinates'][1:]:
-                coords = " ".join(map(lambda x: ",".join(map(str, x)), inner_ring))
+                coords = " ".join([",".join(map(str, x)) for x in inner_ring])
                 #inner_rings.append("""
                 #    <gml:interior>
                 #        <gml:LinearRing>

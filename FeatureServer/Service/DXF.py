@@ -2,7 +2,7 @@
 @author: Michel Ott
 '''
 from FeatureServer.Service.Request import Request
-import StringIO
+import io
 import os
 import tempfile
 import vectorformats.Formats.DXF
@@ -17,7 +17,7 @@ class DXF(Request):
             
             drawing = dxf.encode(result, tmpFile=temp_path)
             
-            output = StringIO.StringIO(open(temp_path).read())
+            output = io.StringIO(open(temp_path).read())
         finally:
             os.remove(temp_path)
         

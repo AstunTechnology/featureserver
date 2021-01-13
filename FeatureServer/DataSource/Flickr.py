@@ -3,10 +3,10 @@ from vectorformats.Feature import Feature
 from FeatureServer.Exceptions.NoGeometryException import NoGeometryException
 
 import md5
-import urllib
+import urllib.request, urllib.parse, urllib.error
 from lxml import etree
 
-from StringIO import StringIO
+from io import StringIO
 
 class Flickr (DataSource):
 
@@ -133,12 +133,12 @@ class FlickrAPI:
         params['format'] = format
         params['api_sig'] = self.signature(params)
 
-        return urllib.urlopen(self.urls["xml"], urllib.urlencode(params)).read()
+        return urllib.request.urlopen(self.urls["xml"], urllib.parse.urlencode(params)).read()
 
 
     def signature(self, params):
         items = []
-        keys = params.keys()
+        keys = list(params.keys())
         keys.sort()
         for key in keys:
             items.append("%s%s" % (key,params[key]))

@@ -47,7 +47,7 @@ class LogicalOperatorTestCase(unittest.TestCase):
             "(highway = 'bus_stop' AND operator = 'VBZ')"
         }
 
-        for fil, stmt in filters.iteritems():
+        for fil, stmt in filters.items():
             filterEncoding = fe.FilterEncoding(fil)
             filterEncoding.parse()
             self.assertEqual(stmt, filterEncoding.render(self.datasource))
@@ -75,7 +75,7 @@ class LogicalOperatorTestCase(unittest.TestCase):
             "((FIELD1 = '10' OR FIELD1 = '20') AND STATUS = 'VALID')"
         }
 
-        for fil, stmt in filters.iteritems():
+        for fil, stmt in filters.items():
             filterEncoding = fe.FilterEncoding(fil)
             filterEncoding.parse()
             self.assertEqual(stmt, filterEncoding.render(self.datasource))
@@ -120,17 +120,17 @@ class LogicalOperatorTestCase(unittest.TestCase):
             "(highway = 'bus_stop' AND NOT operator = 'VBZ' AND NOT operator = 'BVB')"
         }
 
-        for fil, stmt in filters.iteritems():
+        for fil, stmt in filters.items():
             filterEncoding = fe.FilterEncoding(fil)
             filterEncoding.parse()
             self.assertEqual(stmt, filterEncoding.render(self.datasource))
 
 class LogicalOperatorTestSuite(unittest.TestSuite):
     def __init__(self):
-        unittest.TestSuite.__init__(self,map(LogicalOperatorTestCase,
+        unittest.TestSuite.__init__(self,list(map(LogicalOperatorTestCase,
                                                      ("testAndOperator",
                                                       "testOrOperator",
-                                                      "testNotOperator")))
+                                                      "testNotOperator"))))
 
 def suite(): 
     suite = unittest.TestSuite()

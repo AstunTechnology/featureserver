@@ -83,7 +83,7 @@ class GeoAlchemy (DataSource):
         cls = getattr(model, self.cls)
         feature = action.feature
         obj =  cls()
-        for prop in feature.properties.keys():
+        for prop in list(feature.properties.keys()):
             setattr(obj, prop, feature.properties[prop])
         if self.geom_rel and self.geom_cls:
             geom_cls = getattr(model, self.geom_cls)
@@ -108,7 +108,7 @@ class GeoAlchemy (DataSource):
         cls = getattr(model, self.cls)
         feature = action.feature
         obj = self.session.query(cls).get(int(action.id))
-        for prop in feature.properties.keys():
+        for prop in list(feature.properties.keys()):
             setattr(obj, prop, feature.properties[prop])
         if self.geom_rel and self.geom_cls:
             geom_obj = getattr(obj, self.geom_rel)
@@ -156,7 +156,7 @@ class GeoAlchemy (DataSource):
                 query = query.filter(
                     expression.and_(
                         *[self.feature_predicate(getattr(cls, v['column']), v['type'], v['value'])
-                          for k, v in action.attributes.iteritems()]
+                          for k, v in action.attributes.items()]
                     )
                 )
             if action.bbox:
@@ -189,7 +189,7 @@ class GeoAlchemy (DataSource):
                 row_tuple = (row_tuple,)
             for  row in row_tuple:
                 if isinstance(row, cls):
-                    cols = cls.__table__.c.keys()
+                    cols = list(cls.__table__.c.keys())
                     for col in cols:
                         if col == self.fid_col:
                             id = getattr(row, col)
@@ -199,7 +199,7 @@ class GeoAlchemy (DataSource):
                             if self.attribute_cols == '*' or col in self.attribute_cols:
                                 props[col] = getattr(row, col)
                 elif isinstance(row, geom_cls) and geom_cls:
-                    cols = geom_cls.__table__.c.keys()
+                    cols = list(geom_cls.__table__.c.keys())
                     for col in cols:
                         if col == self.fid_col:
                             pass
@@ -211,16 +211,16 @@ class GeoAlchemy (DataSource):
                 else:
                     continue
 
-            for key, value in props.items():
+            for key, value in list(props.items()):
                 if isinstance(value, str): 
-                    props[key] = unicode(value, self.encoding)
+                    props[key] = str(value, self.encoding)
                 elif isinstance(value, datetime.datetime) or isinstance(value, datetime.date):
                     # stringify datetimes 
                     props[key] = str(value)
                     
                 try:
                     if isinstance(value, decimal.Decimal):
-                        props[key] = unicode(str(value), self.encoding)
+                        props[key] = str(str(value), self.encoding)
                 except:
                     pass
                     

@@ -1,4 +1,4 @@
-import StringIO
+import io
 
 class Response(object): 
     status_code = 200
@@ -14,7 +14,7 @@ class Response(object):
         self.encoding = encoding
     
     def getData(self):
-        if isinstance(self.data, StringIO.StringIO):
+        if isinstance(self.data, io.StringIO):
             return self.data.getvalue()
         if len(self.encoding) > 0:
             return self.data.encode(self.encoding)

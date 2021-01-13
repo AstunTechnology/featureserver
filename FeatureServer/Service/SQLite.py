@@ -4,7 +4,7 @@ Created on Sep 14, 2012
 @author: michel
 '''
 from FeatureServer.Service.Request import Request
-import StringIO
+import io
 import os
 import tempfile
 import vectorformats.Formats.SQLite
@@ -19,7 +19,7 @@ class SQLite(Request):
             
             connection = sqlite.encode(result, tmpFile=temp_path)
         
-            output = StringIO.StringIO(open(temp_path).read())
+            output = io.StringIO(open(temp_path).read())
         finally:
             os.remove(temp_path)
             

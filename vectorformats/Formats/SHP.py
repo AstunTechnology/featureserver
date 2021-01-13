@@ -6,7 +6,7 @@ Created on May 18, 2011
 
 from vectorformats.Formats.Format import Format
 import vectorformats.lib.shapefile as shapefile 
-import StringIO
+import io
 
 class SHP(Format):
 
@@ -16,16 +16,16 @@ class SHP(Format):
         
         if len(features) > 0:
             feature = features[0]
-            for key, value in feature.properties.items():
+            for key, value in list(feature.properties.items()):
                 writer.field(key)
         
         for feature in features:
             self.encode_feature(feature, writer)
         
-        shpBuffer = StringIO.StringIO()
-        shxBuffer = StringIO.StringIO()
-        dbfBuffer = StringIO.StringIO()
-        prjBuffer = StringIO.StringIO()
+        shpBuffer = io.StringIO()
+        shxBuffer = io.StringIO()
+        dbfBuffer = io.StringIO()
+        prjBuffer = io.StringIO()
         
         writer.saveShp(shpBuffer)
         writer.saveShx(shxBuffer)
@@ -62,7 +62,7 @@ class SHP(Format):
         
         records = {}
         # TODO: same amount as above
-        for key, property in feature.properties.iteritems():
+        for key, property in feature.properties.items():
             key = self.getFormatedAttributName(key)
             if property == None:
                 records[key] = ' '

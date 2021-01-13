@@ -84,7 +84,7 @@ class Feature (object):
             
             return (minx, miny, maxx, maxy)
         
-        except Exception, E:
+        except Exception as E:
             raise Exception("Unable to determine bounding box for feature: %s. \nGeometry:\n %s" % (E, self.geometry))
 
     def to_dict (self):

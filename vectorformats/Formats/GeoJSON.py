@@ -8,7 +8,7 @@ except:
     try:
         from simplejson import dumps as json_dumps
         from simplejson import loads as json_loads
-    except Exception, E:
+    except Exception as E:
         raise Exception("simplejson is required for using the GeoJSON service. (Import failed: %s)" % E)
 
 class GeoJSON(Format):
@@ -22,9 +22,9 @@ class GeoJSON(Format):
     def _createFeature(self, feature_dict, id = None):
         """Private. Not designed to be used externally."""
         feature = Feature(id)
-        if feature_dict.has_key('geometry'):
+        if 'geometry' in feature_dict:
             feature.geometry = feature_dict['geometry']
-        if feature_dict.has_key('properties'):
+        if 'properties' in feature_dict:
             feature.properties = feature_dict['properties']
         return feature 
         
@@ -40,9 +40,9 @@ class GeoJSON(Format):
         result_data = None
         for feature in features:
             data = self.encode_feature(feature)
-            for key,value in data['properties'].items():
+            for key,value in list(data['properties'].items()):
                 if value and isinstance(value, str): 
-                    data['properties'][key] = unicode(value,"utf-8")
+                    data['properties'][key] = str(value,"utf-8")
             results.append(data)
         
         result_data = {
@@ -153,11 +153,11 @@ class GeoJSON(Format):
 
     def decode(self, data):    
         feature_data = json_loads(data)
-        if feature_data.has_key("features"):
+        if "features" in feature_data:
             feature_data = feature_data['features']
-        elif feature_data.has_key("members"):
+        elif "members" in feature_data:
             feature_data = feature_data['members']
-        elif feature_data.has_key("type") and feature_data['type'] in ['Point', 'LineString', 'Polygon', 'MultiPolygon', 'MultiPoint', 'MultiLineString']:
+        elif "type" in feature_data and feature_data['type'] in ['Point', 'LineString', 'Polygon', 'MultiPolygon', 'MultiPoint', 'MultiLineString']:
             feature_data = [{'geometry':feature_data}] 
         else:
             feature_data = [feature_data]

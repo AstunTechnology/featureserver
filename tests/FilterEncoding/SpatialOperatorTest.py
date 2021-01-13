@@ -44,7 +44,7 @@ class SpatialOperatorTestCase(unittest.TestCase):
             "ST_Equals(way, ST_GeomFromGML('<gml:Point xmlns:gml=\"http://www.opengis.net/gml\" xmlns:regexp=\"http://exslt.org/regular-expressions\" srsName=\"EPSG:4326\"><gml:coordinates>5.9656087,46.144381600000003</gml:coordinates></gml:Point>'))"
         }
     
-        for fil, stmt in filters.iteritems():
+        for fil, stmt in filters.items():
             filterEncoding = fe.FilterEncoding(fil)
             filterEncoding.parse()
             self.assertEqual(stmt, filterEncoding.render(self.datasource))
@@ -62,16 +62,16 @@ class SpatialOperatorTestCase(unittest.TestCase):
             "</Filter>" :
             "NOT ST_Disjoint(way, ST_MakeEnvelope(5.95459,45.75986,10.52490,47.83528, 4326))"
         }
-        for fil, stmt in filters.iteritems():
+        for fil, stmt in filters.items():
             filterEncoding = fe.FilterEncoding(fil)
             filterEncoding.parse()
             self.assertEqual(stmt, filterEncoding.render(self.datasource))
 
 class SpatialOperatorTestSuite(unittest.TestSuite):
     def __init__(self):
-        unittest.TestSuite.__init__(self,map(SpatialOperatorTestCase,
+        unittest.TestSuite.__init__(self,list(map(SpatialOperatorTestCase,
                                                      ("testEquals",
-                                                      "testBBOX")))
+                                                      "testBBOX"))))
 
 def suite(): 
     suite = unittest.TestSuite()

@@ -14,14 +14,14 @@ class Processing(object):
         kwargs = {}
 
         for arg in self.dispatch_args:
-            if self.config_args.has_key("%s_default" % arg):
+            if "%s_default" % arg in self.config_args:
                 kwargs[arg] = self.config_args['%s_default' % arg]
  
         for arg in self.dispatch_args:
-            if self.config_args.has_key("%s_locked" % arg) and self.config_args['%s_locked' % arg].lower() in ['yes', 'y','true', '1']:
+            if "%s_locked" % arg in self.config_args and self.config_args['%s_locked' % arg].lower() in ['yes', 'y','true', '1']:
                 continue
             key = "process_%s_%s" % (self.name, arg)    
-            if params.has_key(key):
+            if key in params:
                 kwargs[arg] = params[key]
         return self.process(features, **kwargs)    
 

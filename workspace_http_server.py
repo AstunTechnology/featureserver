@@ -23,7 +23,7 @@ def local_app(environ, start_response):
             f = open(os.path.join(local_path_location, path))
             start_response("200 OK", [("Content-Type",mime[0])])
             return [f.read()]
-        except Exception, E:
+        except Exception as E:
             start_response("404 Not Found", [("Content-Type","text/plain")])
             return ["Not found: %s" % E]
             
@@ -32,7 +32,7 @@ def local_app(environ, start_response):
 def run(port=8081, thread=False, local_path=""):
     from wsgiref import simple_server
     if thread:
-        from SocketServer import ThreadingMixIn
+        from socketserver import ThreadingMixIn
         class myServer(ThreadingMixIn, simple_server.WSGIServer):
             pass 
     else:
@@ -48,10 +48,10 @@ def run(port=8081, thread=False, local_path=""):
         httpd.set_app(wsgi_app_workspace)
     
     try:
-        print "Listening on port %s" % port
+        print("Listening on port %s" % port)
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print "Shutting down."
+        print("Shutting down.")
 
 if __name__ == '__main__':
     parser = OptionParser(version=__version__, description=__doc__)

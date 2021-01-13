@@ -18,7 +18,7 @@ class ExceptionReport():
         self.index = 0
         return self
     
-    def next(self):
+    def __next__(self):
         if self.index >= len(self):
             raise StopIteration
         exception = self.exceptions[self.index]

@@ -6,7 +6,7 @@ Created on May 18, 2011
 from FeatureServer.Service.Request import Request
 import vectorformats.Formats.SHP
 import zipfile
-import StringIO
+import io
 from lxml import etree
 
 class SHP(Request):
@@ -14,7 +14,7 @@ class SHP(Request):
         shp = vectorformats.Formats.SHP.SHP(layername=self.datasources[0], datasource=self.service.datasources[self.datasources[0]])
         (shpBuffer, shxBuffer, dbfBuffer, prjBuffer)  = shp.encode(result)
 
-        output = StringIO.StringIO()
+        output = io.StringIO()
         
         zip = zipfile.ZipFile(output, "w")
         

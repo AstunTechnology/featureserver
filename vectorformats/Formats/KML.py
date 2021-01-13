@@ -34,33 +34,33 @@ class KML(Format):
     def encode_feature(self, feature):
         "Take a feature, and return an XML string for that feature."
         name = ""
-        if self.title_property and feature.properties.has_key(self.title_property):
+        if self.title_property and self.title_property in feature.properties:
             name = feature.properties[self.title_property]        
         elif "title" in feature.properties:
             name = feature.properties['title']
         description = ""
-        if feature.properties.has_key("description"):
+        if "description" in feature.properties:
             description = "<![CDATA[%s]]>" % feature.properties['description']
         else:    
             desc_fields = ['Properties:'] 
-            for key, value in feature.properties.items():
+            for key, value in list(feature.properties.items()):
                 if key in ["styleUrl", "title"]: continue 
                 if isinstance(value, str):
-                        value = unicode(value, "utf-8")
+                        value = str(value, "utf-8")
                 desc_fields.append( "<b>%s</b>: %s" % (key, value) )
             description = "<![CDATA[%s]]>" % ("<br />".join(desc_fields))   
         
         styleUrl = "#allstyle"
-        if feature.properties.has_key("styleUrl"):
+        if "styleUrl" in feature.properties:
             styleUrl = feature.properties['styleUrl']
         
         attr_fields = []
-        for key, value in feature.properties.items():
+        for key, value in list(feature.properties.items()):
             #key = re.sub(r'\W', '_', key)
             if key in ["title", "description", "styleUrl"]: continue
             attr_value = value
             if isinstance(attr_value, str):
-                attr_value = unicode(attr_value, "utf-8")
+                attr_value = str(attr_value, "utf-8")
             if hasattr(attr_value,"replace"): 
                 attr_value = attr_value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             attr_fields.append( "<fs:%s>%s</fs:%s>" % (key, attr_value, key) )
@@ -87,10 +87,10 @@ class KML(Format):
             coords = ",".join(map(str, geometry['coordinates']))
             return "<Point><coordinates>%s</coordinates></Point>" % coords
         elif geometry['type'] == "LineString":
-            coords = " ".join(map(lambda x: ",".join(map(str, x)), geometry['coordinates']))
+            coords = " ".join([",".join(map(str, x)) for x in geometry['coordinates']])
             return "<LineString><coordinates>%s</coordinates></LineString>" % coords
         elif geometry['type'] == "Polygon":
-            coords = " ".join(map(lambda x: ",".join(map(str, x)), geometry['coordinates'][0]))
+            coords = " ".join([",".join(map(str, x)) for x in geometry['coordinates'][0]])
             out = """
               <outerBoundaryIs><LinearRing>
               <coordinates>%s</coordinates>
@@ -98,7 +98,7 @@ class KML(Format):
             """ % coords 
             inner_rings = []
             for inner_ring in geometry['coordinates'][1:]:
-                coords = " ".join(map(lambda x: ",".join(map(str, x)), inner_ring))
+                coords = " ".join([",".join(map(str, x)) for x in inner_ring])
                 inner_rings.append("""
                   <innerBoundaryIs><LinearRing>
                   <coordinates>%s</coordinates>
@@ -130,11 +130,11 @@ class KML(Format):
         polys = placemark_dom.getElementsByTagName("Polygon")
         if len(points):
             coords = points[0].getElementsByTagName("coordinates")[0].firstChild.nodeValue.strip().split(",")
-            feature.geometry = {'type':'Point', 'coordinates':map(float,coords)}
+            feature.geometry = {'type':'Point', 'coordinates':list(map(float,coords))}
         elif len(lines):
             coordstring = lines[0].getElementsByTagName("coordinates")[0].firstChild.nodeValue.strip()
             coords = coordstring.split(" ")
-            coords = map(lambda x: x.split(","), coords)
+            coords = [x.split(",") for x in coords]
             feature.geometry = {'type':'LineString', 'coordinates':coords}
         elif len(polys):
             rings = []
@@ -142,12 +142,12 @@ class KML(Format):
             outer = poly.getElementsByTagName("outerBoundaryIs")[0]
             outer_coordstring = outer.getElementsByTagName("coordinates")[0].firstChild.nodeValue.strip()
             outer_coords = outer_coordstring.split(" ")
-            outer_coords = map(lambda x: map(float,x.split(",")), outer_coords)
+            outer_coords = [list(map(float,x.split(","))) for x in outer_coords]
             rings.append(outer_coords)
             inners = poly.getElementsByTagName("innerBoundaryIs")
             for inner in inners:
                 inner_coords = inner.getElementsByTagName("coordinates")[0].firstChild.nodeValue.strip().split(" ")
-                inner_coords = map(lambda x: map(float,x.split(",")), inner_coords)
+                inner_coords = [list(map(float,x.split(","))) for x in inner_coords]
                 rings.append(inner_coords)
             
             feature.geometry = {'type':'Polygon', 'coordinates':rings}

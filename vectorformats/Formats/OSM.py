@@ -24,14 +24,14 @@ class OSM(Format):
         
         if feature.geometry['type'] == "Point":
             version = None
-            if feature.properties.has_key('version'):
+            if 'version' in feature.properties:
                 version = feature.properties['version']
             node = self.create_node(-feature.id, feature.geometry['coordinates'], version)
-            for key, value in feature.properties.items():
-                if isinstance(value, types.NoneType):
+            for key, value in list(feature.properties.items()):
+                if isinstance(value, type(None)):
                     continue
                 if isinstance(value, str):
-                    value = unicode(value, "utf-8")
+                    value = str(value, "utf-8")
                 if isinstance(value, int):
                     value = str(value)
                 tag = doc.createElement("tag")
@@ -53,17 +53,17 @@ class OSM(Format):
             for coord in coords:
                 i+=1
                 version = None
-                if feature.properties.has_key('version'):
+                if 'version' in feature.properties:
                     version = feature.properties['version']
                 xml += self.create_node("-%s000000%s" % (feature.id, i), coord, version).toxml()
                 nd = doc.createElement("nd")
                 nd.setAttribute("ref", "-%s000000%s" % (feature.id, i))
                 way.appendChild(nd)
-            for key, value in feature.properties.items():
-                if isinstance(value, types.NoneType):
+            for key, value in list(feature.properties.items()):
+                if isinstance(value, type(None)):
                     continue
                 if isinstance(value, str):
-                    value = unicode(value, "utf-8")
+                    value = str(value, "utf-8")
                 if isinstance(value, int):
                     value = str(value)
                 tag = doc.createElement("tag")

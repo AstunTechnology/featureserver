@@ -108,12 +108,12 @@ END;
         self.db.close()
 
     def column_names (self, feature):
-        return feature.properties.keys()
+        return list(feature.properties.keys())
 
     def value_formats (self, feature):
         #values = ["%%(%s)s" % self.geom_col]
         values = []
-        for key, val in feature.properties.items():
+        for key, val in list(feature.properties.items()):
             values.append(":%s" % key)
         return values
 
@@ -143,7 +143,7 @@ END;
         action.id = res.lastrowid
         #self.db.commit()
 
-        insert_tuples = [(res.lastrowid, k, v) for k,v in feature.properties.items()]
+        insert_tuples = [(res.lastrowid, k, v) for k,v in list(feature.properties.items())]
         sql = "INSERT INTO \"%s_attrs\" (feature_id, key, value) VALUES (?, ?, ?)" % (self.table,) 
         cursor.executemany(sql,insert_tuples)
 
@@ -202,7 +202,7 @@ END;
 
         else:
             match = Feature(props = action.attributes)
-            filters = match.properties.items()
+            filters = list(match.properties.items())
             
             sql = "SELECT DISTINCT(t.feature_id) as feature_id, t.%s as %s,\
             t.%s as %s FROM \"%s\" t LEFT JOIN \"%s_attrs\" a ON a.feature_id =\

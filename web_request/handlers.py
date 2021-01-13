@@ -5,8 +5,8 @@
 import sys, os, traceback
 import cgi as cgimod
 from web_request.response import Response
-import urllib
-import StringIO
+import urllib.request, urllib.parse, urllib.error
+import io
 
 
 class ApplicationException(Exception): 
@@ -35,16 +35,16 @@ def mod_python (dispatch_function, apache_request):
     from mod_python import apache, util
     
     try:
-        if apache_request.headers_in.has_key("X-Forwarded-Host"):
+        if "X-Forwarded-Host" in apache_request.headers_in:
             base_path = "http://" + apache_request.headers_in["X-Forwarded-Host"]
         else:
             base_path = "http://" + apache_request.headers_in["Host"]
             
         base_path += apache_request.uri[:-len(apache_request.path_info)]
         accepts = "" 
-        if apache_request.headers_in.has_key("Accept"):
+        if "Accept" in apache_request.headers_in:
             accepts = apache_request.headers_in["Accept"]
-        elif apache_request.headers_in.has_key("Content-Type"):
+        elif "Content-Type" in apache_request.headers_in:
             accepts = apache_request.headers_in["Content-Type"]
         
         post_data = apache_request.read()
@@ -53,7 +53,7 @@ def mod_python (dispatch_function, apache_request):
         params = {}
         if request_method != "POST":
             fields = util.FieldStorage(apache_request) 
-            for key in fields.keys():
+            for key in list(fields.keys()):
                 params[key.lower()] = fields[key] 
          #if post_data:
              #for key, value in cgimod.parse_qsl(post_data, keep_blank_values=True):
@@ -69,7 +69,7 @@ def mod_python (dispatch_function, apache_request):
         if isinstance(returned_data, list) or isinstance(returned_data, tuple): 
             format, data = returned_data[0:2]
             if len(returned_data) == 3:
-                for key, value in returned_data[2].items():
+                for key, value in list(returned_data[2].items()):
                     apache_request.headers_out[key] = value
 
             apache_request.content_type = format
@@ -78,7 +78,7 @@ def mod_python (dispatch_function, apache_request):
         else:
             obj = returned_data
             if obj.extra_headers:
-                for key, value in obj.extra_headers.items():
+                for key, value in list(obj.extra_headers.items()):
                     apache_request.headers_out[key] = value
 
             apache_request.status = obj.status_code
@@ -86,18 +86,18 @@ def mod_python (dispatch_function, apache_request):
             apache_request.send_http_header()
             apache_request.write(obj.getData())
 
-    except ApplicationException, error:
+    except ApplicationException as error:
         apache_request.content_type = "text/plain"
         apache_request.status = error.status_code 
         apache_request.send_http_header()
         apache_request.write("An error occurred: %s\n" % (str(error)))
-    except Exception, error:
+    except Exception as error:
         apache_request.content_type = "text/plain"
         apache_request.status = apache.HTTP_INTERNAL_SERVER_ERROR
         apache_request.send_http_header()
         apache_request.write("An error occurred: %s\n%s\n" % (
             str(error), 
-            "".join(traceback.format_tb(sys.exc_traceback))))
+            "".join(traceback.format_tb(sys.exc_info()[2]))))
     
     return apache.OK
 
@@ -117,7 +117,7 @@ def wsgi (dispatch_function, environ, start_response):
         base_path += environ["SCRIPT_NAME"]
         
         accepts = None 
-        if environ.has_key("CONTENT_TYPE"):
+        if "CONTENT_TYPE" in environ:
             accepts = environ['CONTENT_TYPE']
         else:
             accepts = environ.get('HTTP_ACCEPT', '')
@@ -127,14 +127,14 @@ def wsgi (dispatch_function, environ, start_response):
         params = {}
         post_data = None
     
-        if environ.has_key('CONTENT_LENGTH') and environ['CONTENT_LENGTH']:
+        if 'CONTENT_LENGTH' in environ and environ['CONTENT_LENGTH']:
             post_data = environ['wsgi.input'].read(int(environ['CONTENT_LENGTH']))
             
             #if post_data:
             #    for key, value in cgimod.parse_qsl(post_data, keep_blank_values=True):
             #        params[key.lower()] = value                
     
-        if environ.has_key('QUERY_STRING'):
+        if 'QUERY_STRING' in environ:
             for key, value in cgimod.parse_qsl(environ['QUERY_STRING'], keep_blank_values=True):
                 params[key.lower()] = value
         
@@ -153,7 +153,7 @@ def wsgi (dispatch_function, environ, start_response):
             if len(returned_data) == 3:
                 headers.update(returned_data[2])
                   
-            start_response("200 OK", headers.items())
+            start_response("200 OK", list(headers.items()))
             return [str(data)]
         else:
             # This is a a web_request.Response.Response object
@@ -161,19 +161,19 @@ def wsgi (dispatch_function, environ, start_response):
             if returned_data.extra_headers:
                 headers.update(returned_data.extra_headers)
             start_response("%s Message" % returned_data.status_code,
-                           headers.items())
+                           list(headers.items()))
             
             return [returned_data.getData()]
 
 
-    except ApplicationException, error:
+    except ApplicationException as error:
         start_response(error.get_error(), [('Content-Type','text/plain')])
         return ["An error occurred: %s" % (str(error))]
-    except Exception, error:
+    except Exception as error:
         start_response("500 Internal Server Error", [('Content-Type','text/plain')])
         return ["An error occurred: %s\n%s\n" % (
             str(error), 
-            "".join(traceback.format_tb(sys.exc_traceback)))]
+            "".join(traceback.format_tb(sys.exc_info()[2])))]
 
 def cgi (dispatch_function):
     """cgi handler""" 
@@ -204,8 +204,8 @@ def cgi (dispatch_function):
             #        params[key.lower()] = value
             
             # StringIO to create filehandler so data can be read again by cgi 
-            fields = cgimod.FieldStorage(fp=StringIO.StringIO(post_data))
-            if fields <> None:
+            fields = cgimod.FieldStorage(fp=io.StringIO(post_data))
+            if fields != None:
                 for key, value in cgimod.parse_qsl(fields.qs_on_post, keep_blank_values=True):
                     params[key.lower()] = value
             
@@ -213,8 +213,8 @@ def cgi (dispatch_function):
         else:
             fields = cgimod.FieldStorage()
             try:
-                for key in fields.keys(): 
-                    params[key.lower()] = urllib.unquote(fields[key].value)
+                for key in list(fields.keys()): 
+                    params[key.lower()] = urllib.parse.unquote(fields[key].value)
             except TypeError:
                 pass
     
@@ -242,40 +242,40 @@ def cgi (dispatch_function):
             format, data = returned_data[0:2]
             
             if len(returned_data) == 3:
-                for (key, value) in returned_data[2].items():
-                    print "%s: %s" % (key, value)
+                for (key, value) in list(returned_data[2].items()):
+                    print("%s: %s" % (key, value))
 
-            print "Content-type: %s\n" % format
+            print("Content-type: %s\n" % format)
 
             if sys.platform == "win32":
                 binary_print(data)
             else:    
-                print data 
+                print(data) 
         
         else:    
             # Returned object is a 'response'
             obj = returned_data
             if obj.extra_headers:
-                for (key, value) in obj.extra_headers.items(): 
-                    print "%s: %s" % (key, value)
+                for (key, value) in list(obj.extra_headers.items()): 
+                    print("%s: %s" % (key, value))
 
-            print "Content-type: %s\n" % obj.content_type
+            print("Content-type: %s\n" % obj.content_type)
 
             if sys.platform == "win32":
                 binary_print(obj.getData())
             else:    
-                print obj.getData()
+                print(obj.getData())
     
-    except ApplicationException, error:
-        print "Cache-Control: max-age=10, must-revalidate" # make the client reload        
-        print "Content-type: text/plain\n"
-        print "An error occurred: %s\n" % (str(error))
-    except Exception, error:
-        print "Cache-Control: max-age=10, must-revalidate" # make the client reload        
-        print "Content-type: text/plain\n"
-        print "An error occurred: %s\n%s\n" % (
+    except ApplicationException as error:
+        print("Cache-Control: max-age=10, must-revalidate") # make the client reload        
+        print("Content-type: text/plain\n")
+        print("An error occurred: %s\n" % (str(error)))
+    except Exception as error:
+        print("Cache-Control: max-age=10, must-revalidate") # make the client reload        
+        print("Content-type: text/plain\n")
+        print("An error occurred: %s\n%s\n" % (
             str(error), 
-            "".join(traceback.format_tb(sys.exc_traceback)))
+            "".join(traceback.format_tb(sys.exc_info()[2]))))
         if params:
-            print params    
+            print(params)    
 

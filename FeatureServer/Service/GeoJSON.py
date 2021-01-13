@@ -12,7 +12,7 @@ from FeatureServer.WebFeatureService.Response.TransactionResponse import Transac
 
 try:
     import simplejson
-except Exception, E:
+except Exception as E:
     raise Exception("simplejson is required for using the JSON service. (Import failed: %s)" % E)
 
 class GeoJSON(Request):
@@ -23,7 +23,7 @@ class GeoJSON(Request):
     def encode_metadata(self, action):
         layers = self.service.datasources
         metadata = []
-        for key in layers.keys():
+        for key in list(layers.keys()):
             metadata.append(
               { 
                 'name': key,

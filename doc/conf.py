@@ -38,8 +38,8 @@ source_suffix = '.txt'
 master_doc = 'index'
 
 # General information about the project.
-project = u'FeatureServer'
-copyright = u'2008, Christopher Schmidt'
+project = 'FeatureServer'
+copyright = '2008, Christopher Schmidt'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -165,8 +165,8 @@ htmlhelp_basename = 'FeatureServerdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, document class [howto/manual]).
 latex_documents = [
-  ('index', 'FeatureServer.tex', ur'FeatureServer Documentation',
-   ur'Christopher Schmidt', 'manual'),
+  ('index', 'FeatureServer.tex', r'FeatureServer Documentation',
+   r'Christopher Schmidt', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

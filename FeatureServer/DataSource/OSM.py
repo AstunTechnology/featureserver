@@ -6,7 +6,7 @@ __version__ = "$Id: Twitter.py 412 2008-01-01 08:15:59Z crschmidt $"
 from FeatureServer.DataSource import DataSource
 from vectorformats.Feature import Feature
 
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import xml.dom.minidom
 
 class OSM (DataSource):
@@ -64,20 +64,20 @@ class OSM (DataSource):
             return self.select_main(action)
         else:
             predicates = []
-            for key, value in action.attributes.items():
+            for key, value in list(action.attributes.items()):
                 predicates.append("[%s=%s]" % (key, value))
             if action.bbox:
                 predicates.append("[bbox=%s]" % ",".join(map(str, action.bbox)))
             
             url = "%sway%s" % (self.osmxapi_url, "".join(predicates))
-            return urllib.urlopen(url).read()
+            return urllib.request.urlopen(url).read()
             
     def select_main(self, action):
         """Talking to the main API, openstreetmap.org."""
         if action.id:
-            urldata = urllib.urlopen("http://openstreetmap.org/api/0.5/way/%s/full" % action.id)
+            urldata = urllib.request.urlopen("http://openstreetmap.org/api/0.5/way/%s/full" % action.id)
         elif action.bbox: 
-            urldata = urllib.urlopen("http://openstreetmap.org/api/0.5/map?bbox=%s" % ",".join(map(str, action.bbox)))
+            urldata = urllib.request.urlopen("http://openstreetmap.org/api/0.5/map?bbox=%s" % ",".join(map(str, action.bbox)))
         else:
             raise Exception("Only bounding box queries or queries for way-by-ID are acceptable.")
         data = urldata.read()    

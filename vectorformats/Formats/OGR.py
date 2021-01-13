@@ -4,7 +4,7 @@ import simplejson
 try:
     import osgeo.ogr as ogr
 except ImportError:
-    import ogr
+    from . import ogr
 import re, xml.dom.minidom as m
 
 class OGR(Format):
@@ -20,7 +20,7 @@ class OGR(Format):
         layer = self.ds.CreateLayer(self.layername)
         props = []
         for feature in features:
-            for prop, value in feature.properties.items():
+            for prop, value in list(feature.properties.items()):
                 if not prop: continue
                 if prop not in props:
                     props.append(prop)
@@ -30,9 +30,9 @@ class OGR(Format):
                     layer.CreateField(defn)
         for feature in features:
             f = ogr.Feature(feature_def=layer.GetLayerDefn())
-            for prop, value in feature.properties.items():
+            for prop, value in list(feature.properties.items()):
                 prop = str(prop)
-                if isinstance(value, unicode):
+                if isinstance(value, str):
                     value = value.encode("utf-8", "replace")
                 f.SetField(prop, value)
             g = self.CreateGeometryFromJson(simplejson.dumps(feature.geometry))
@@ -63,7 +63,7 @@ class OGR(Format):
             try:
                 import simplejson
             except ImportError:
-                raise ImportError, "You must have 'simplejson' installed to be able to use this functionality"
+                raise ImportError("You must have 'simplejson' installed to be able to use this functionality")
             input = simplejson.loads(input)
     
         types = { 'Point': ogr.wkbPoint,

@@ -26,22 +26,22 @@ class GPX(Format):
         
         if feature.geometry['type'] == 'Point':
             xml.append("""<wpt lon="%s" lat="%s">""" % (str(feature.geometry["coordinates"][0]), str(feature.geometry["coordinates"][1])))
-            if feature.properties.has_key('name'):
-                if isinstance(feature.properties["name"], types.NoneType):
+            if 'name' in feature.properties:
+                if isinstance(feature.properties["name"], type(None)):
                     xml.append("""<name>%s</name>""" % str(feature.id))
                 else:
                     xml.append("""<name>%s</name>""" % escape(feature.properties["name"]))
             else:
                 xml.append("""<name>%s</name>""" % str(feature.id))
-            if feature.properties.has_key('ele'):
+            if 'ele' in feature.properties:
                 xml.append("""<ele>%s</ele>""" % feature.properties["ele"])
             xml.append("""</wpt>""")
 
         elif feature.geometry['type'] == 'LineString':
             xml.append("<trk>")
             
-            if feature.properties.has_key('name'):
-                if isinstance(feature.properties["name"], types.NoneType):
+            if 'name' in feature.properties:
+                if isinstance(feature.properties["name"], type(None)):
                     xml.append("""<name>%s</name>""" % str(feature.id))
                 else:
                     xml.append("""<name>%s</name>""" % escape(feature.properties["name"]))
@@ -54,7 +54,7 @@ class GPX(Format):
             for coord in coords:
                 xml.append("""<trkpt lon="%s" lat="%s">""" % (str(coord[0]), str(coord[1])))
                 
-                if feature.properties.has_key('ele'):
+                if 'ele' in feature.properties:
                     xml.append("""<ele>%s</ele>""" % feature.properties["ele"])
                 
                 xml.append("</trkpt>")
@@ -64,8 +64,8 @@ class GPX(Format):
         elif feature.geometry['type'] == 'Polygon':
             xml.append("<trk>")
             
-            if feature.properties.has_key('name'):
-                if isinstance(feature.properties["name"], types.NoneType):
+            if 'name' in feature.properties:
+                if isinstance(feature.properties["name"], type(None)):
                     xml.append("""<name>%s</name>""" % str(feature.id))
                 else:
                     xml.append("""<name>%s</name>""" % escape(feature.properties["name"]))
@@ -78,7 +78,7 @@ class GPX(Format):
             for coord in coords:
                 xml.append("""<trkpt lon="%s" lat="%s">""" % (str(coord[0]), str(coord[1])))
                 
-                if feature.properties.has_key('ele'):
+                if 'ele' in feature.properties:
                     xml.append("""<ele>%s</ele>""" % feature.properties["ele"])
                 
                 xml.append("</trkpt>")

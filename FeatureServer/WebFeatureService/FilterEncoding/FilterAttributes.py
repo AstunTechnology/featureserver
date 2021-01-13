@@ -22,8 +22,8 @@ class FilterAttributes(object):
         elements = result.xpath("//Attributes")
         if len(elements) > 0:
             str_list =  elements[0].text.strip().split(',')
-            str_list = filter(None, str_list)
-            str_list = filter(lambda x: len(x) > 0, str_list)
+            str_list = [_f for _f in str_list if _f]
+            str_list = [x for x in str_list if len(x) > 0]
             return str_list
         return []
 
