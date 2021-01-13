@@ -68,3 +68,4 @@ web.config
 
 # Log files
 *.log
+.env
