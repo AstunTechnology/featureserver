@@ -6,8 +6,11 @@ import doctest
 import unittest
 import glob
 import os
+import sys
+from os.path import dirname
 
 optionflags = (
+               doctest.REPORT_ONLY_FIRST_FAILURE |
                doctest.NORMALIZE_WHITESPACE |
                doctest.ELLIPSIS)
 
@@ -34,5 +37,8 @@ def run_doc_tests():
          in list_doctests()])
 
 if __name__ == "__main__":
+    test_dir = dirname(__file__)
+    proj_dir = os.path.join(test_dir, '..')
+    sys.path.append(proj_dir)
     runner = unittest.TextTestRunner()
     runner.run(run_doc_tests())
