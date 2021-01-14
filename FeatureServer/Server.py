@@ -215,7 +215,7 @@ class Server (object):
         #       | Request | <|------- | WFS |
         #       -----------           -------
         #===============================================================================
-        service_module = __import__("Service.%s" % format, globals(), locals(), format)
+        service_module = import_module(f"FeatureServer.Service.{format}")
         service = getattr(service_module, format)
         request = service(self)
 
@@ -289,7 +289,7 @@ class Server (object):
 
         if len(exceptionReport) > 0:
             if "default_exception" in self.metadata:
-                service_module = __import__("Service.%s" % self.metadata['default_exception'], globals(), locals(), self.metadata['default_exception'])
+                service_module = import_module(f"FeatureServer.Service.{ self.metadata['default_exception']}")
                 service = getattr(service_module, self.metadata['default_exception'])
                 default_exception = service(self)
 
@@ -303,7 +303,7 @@ class Server (object):
                     mime, data, headers, encoding = request.encode_exception_report(exceptionReport)
                 else:
                     # get default service and instantiate
-                    service_module = __import__("Service.%s" % self.metadata['default_service'], globals(), locals(), self.metadata['default_service'])
+                    service_module = import_module(f"FeatureServer.Service.{ self.metadata['default_service']}")
                     service = getattr(service_module, self.metadata['default_service'])
                     default_service = service(self)
 

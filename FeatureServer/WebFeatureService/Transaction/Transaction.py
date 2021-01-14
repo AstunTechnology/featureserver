@@ -5,6 +5,7 @@ Created on Oct 16, 2011
 '''
 import os
 import sys
+from importlib import import_module
 from lxml import etree
 from lxml import objectify
 from copy import deepcopy
@@ -50,7 +51,7 @@ class Transaction(object):
     def getTransactionInstance(self, transaction, node):
         try:
             sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-            transaction_module = __import__(transaction, globals(), locals())
+            transaction_module = import_module(f"FeatureServer.WebFeatureService.Transaction.{transaction}")
         except ImportError:
             raise Exception("Could not find transaction for %s" % transaction)
         

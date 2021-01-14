@@ -2,10 +2,9 @@ from FeatureServer.DataSource import DataSource
 from vectorformats.Feature import Feature
 from vectorformats.Formats import WKT
 from sqlalchemy import create_engine, func
-from sqlalchemy.sql import expression, visitors, operators
+from sqlalchemy.sql import expression, operators
 from sqlalchemy.orm import sessionmaker
-
-import copy
+from importlib import import_module
 import datetime
 
 try:
@@ -79,7 +78,7 @@ class GeoAlchemy (DataSource):
             self.session.rollback()
 
     def insert (self, action):
-        model = __import__(self.model, fromlist=['*'])
+        model = import_module(".*", self.model)
         cls = getattr(model, self.cls)
         feature = action.feature
         obj =  cls()
@@ -104,7 +103,7 @@ class GeoAlchemy (DataSource):
         
 
     def update (self, action):
-        model = __import__(self.model, fromlist=['*'])
+        model = import_module(".*", self.model)
         cls = getattr(model, self.cls)
         feature = action.feature
         obj = self.session.query(cls).get(int(action.id))
@@ -122,7 +121,7 @@ class GeoAlchemy (DataSource):
         return self.select(action)
         
     def delete (self, action):
-        model = __import__(self.model, fromlist=['*'])
+        model = import_module(".*", self.model)
         cls = getattr(model, self.cls)
         obj = self.session.query(cls).get(action.id)
         if self.geom_rel and self.geom_col:
@@ -136,7 +135,7 @@ class GeoAlchemy (DataSource):
         return []
 
     def select (self, action):
-        model = __import__(self.model, fromlist=['*'])
+        model = import_module(".*", self.model)
         cls = getattr(model, self.cls)
         geom_cls = None
         if self.geom_cls:

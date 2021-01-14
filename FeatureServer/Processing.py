@@ -1,3 +1,6 @@
+from importlib import import_module
+
+
 class Processing(object):
     def __init__(self, name, process, **kwargs):
         self.name = name
@@ -29,7 +32,7 @@ def loadFromSection (config, section):
     mod = config.get(section, "module")
     cls = config.get(section, "class")
     mod_name = mod.split(".")[-1]
-    module = __import__(mod, globals(), locals(), mod_name)
+    module = import_module(f"FeatureServer.{mod}.{mod_name}")
     action = getattr(module, cls)
     objargs = {}
     for opt in config.options(section):

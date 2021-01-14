@@ -8,6 +8,7 @@ import os
 import sys
 from lxml import etree
 from lxml import objectify
+from importlib import import_module
 
 class FilterEncoding (object):
     
@@ -68,7 +69,7 @@ class FilterEncoding (object):
             sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/LogicalOperators")
             sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/ObjectIdentifiers")
             sys.path.append(os.path.dirname(os.path.abspath(__file__))+"/SpatialOperators")
-            operator_module = __import__(str(node.xpath('local-name()')), globals(), locals())
+            operator_module = import_module(f"FeatureServer.WebFeatureService.FeatureEncoding.{str(node.xpath('local-name()'))}")
         except ImportError:
             raise Exception("Could not find filter for %s" % node.xpath('local-name()'))
         

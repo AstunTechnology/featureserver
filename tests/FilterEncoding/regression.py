@@ -5,13 +5,14 @@ Created on May 10, 2011
 '''
 
 import unittest
+from importlib import import_module
 
 class RegressionTest(unittest.TestCase):
     
     def suite(self):
         modules_to_test = ('SpatialOperatorTest')
         alltests = unittest.TestSuite()
-        for module in map(__import__, modules_to_test):
+        for module in map(f"FilterEncoding.{import_module}", modules_to_test):
             alltests.addTest(unittest.findTestCases(module))
         return alltests
 def suite():
