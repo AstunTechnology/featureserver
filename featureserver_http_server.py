@@ -39,19 +39,19 @@ def run(port=8080, thread=False, local_path=""):
         class myServer(simple_server.WSGIServer):
             pass
 
-    httpd = myServer(('', port), simple_server.WSGIRequestHandler,)
     if local_path:
         global local_path_location
         local_path_location = local_path
-        httpd.set_app(local_app)
+        web_app = local_app
     else:
-        httpd.set_app(wsgi_app)
-    
-    try:
-        print("Listening on port %s" % port)
-        httpd.serve_forever()
-    except KeyboardInterrupt:
-        print("Shutting down.")
+       web_app = wsgi_app
+
+    with simple_server.make_server('', port, web_app, server_class=myServer) as httpd:    
+        try:
+            print("Listening on port %s" % port)
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("Shutting down.")
 
 if __name__ == '__main__':
     parser = OptionParser(version=__version__, description=__doc__)
