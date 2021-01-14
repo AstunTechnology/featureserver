@@ -146,7 +146,7 @@ def wsgi (dispatch_function, environ, start_response):
                 headers.update(returned_data[2])
                   
             start_response("200 OK", list(headers.items()))
-            return [bytes(data)]
+            return [data.encode('utf-8')]
         else:
             # This is a a web_request.Response.Response object
             headers = {'Content-Type': returned_data.content_type}
