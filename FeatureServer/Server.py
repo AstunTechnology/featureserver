@@ -12,6 +12,7 @@ import traceback
 import configparser
 from web_request.handlers import wsgi, mod_python, cgi
 from lxml import etree
+from importlib import import_module
 import cgi as cgimod
 
 from FeatureServer.WebFeatureService.Response.TransactionResponse import TransactionResponse
@@ -82,7 +83,7 @@ class Server (object):
 
     def _loadFromSection (cls, config, section, module_type, **objargs):
         type  = config.get(section, "type")
-        module = __import__("%s.%s" % (module_type, type), globals(), locals(), type)
+        module = import_module(f"FeatureServer.{module_type}.{type}")
         objclass = getattr(module, type)
         for opt in config.options(section):
             objargs[opt] = config.get(section, opt)
