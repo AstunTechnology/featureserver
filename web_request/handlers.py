@@ -171,8 +171,9 @@ def wsgi (dispatch_function, environ, start_response):
 def cgi (dispatch_function):
     """cgi handler""" 
 
+    accepts = ""
+    params = {}
     try:
-        accepts = ""
         if "CONTENT_TYPE" in os.environ:
             accepts = os.environ['CONTENT_TYPE']
         elif "HTTP_ACCEPT" in os.environ:
@@ -182,7 +183,6 @@ def cgi (dispatch_function):
         content_length = int(os.environ["CONTENT_LENGTH"])
         
         post_data = None 
-        params = {}
         if request_method != "GET" and request_method != "DELETE":
             if content_length:
                 # IIS doesn't seem to provide EOF

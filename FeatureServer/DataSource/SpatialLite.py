@@ -5,6 +5,7 @@ Created on Oct 22, 2012
 '''
 
 import os
+import decimal
 
 from FeatureServer.DataSource import DataSource
 from vectorformats.Feature import Feature
