@@ -4,7 +4,6 @@
 
 import sys, os, traceback
 import cgi as cgimod
-from web_request.response import Response
 import urllib.request, urllib.parse, urllib.error
 import io
 
@@ -55,9 +54,6 @@ def mod_python (dispatch_function, apache_request):
             fields = util.FieldStorage(apache_request) 
             for key in list(fields.keys()):
                 params[key.lower()] = fields[key] 
-         #if post_data:
-             #for key, value in cgimod.parse_qsl(post_data, keep_blank_values=True):
-                 #params[key.lower()] = value
         returned_data = dispatch_function( 
           base_path = base_path, 
           path_info = apache_request.path_info, 
@@ -128,14 +124,10 @@ def wsgi (dispatch_function, environ, start_response):
         post_data = None
     
         if 'CONTENT_LENGTH' in environ and environ['CONTENT_LENGTH']:
-            post_data = environ['wsgi.input'].read(int(environ['CONTENT_LENGTH']))
-            
-            #if post_data:
-            #    for key, value in cgimod.parse_qsl(post_data, keep_blank_values=True):
-            #        params[key.lower()] = value                
+            post_data = environ['wsgi.input'].read(int(environ['CONTENT_LENGTH']))            
     
         if 'QUERY_STRING' in environ:
-            for key, value in cgimod.parse_qsl(environ['QUERY_STRING'], keep_blank_values=True):
+            for key, value in urllib.parse.parse_qsl(environ['QUERY_STRING'], keep_blank_values=True):
                 params[key.lower()] = value
         
         returned_data = dispatch_function( 
@@ -154,7 +146,7 @@ def wsgi (dispatch_function, environ, start_response):
                 headers.update(returned_data[2])
                   
             start_response("200 OK", list(headers.items()))
-            return [str(data)]
+            return [bytes(data)]
         else:
             # This is a a web_request.Response.Response object
             headers = {'Content-Type': returned_data.content_type}
@@ -168,12 +160,13 @@ def wsgi (dispatch_function, environ, start_response):
 
     except ApplicationException as error:
         start_response(error.get_error(), [('Content-Type', 'text/plain')])
-        return ["An error occurred: %s" % (str(error))]
+        msg = f"An error occurred: {str(error)}" 
+        return msg.encode('utf-8')
     except Exception as error:
         start_response("500 Internal Server Error", [('Content-Type', 'text/plain')])
-        return ["An error occurred: %s\n%s\n" % (
-            str(error), 
-            "".join(traceback.format_tb(sys.exc_info()[2])))]
+        trace = "".join(traceback.format_tb(sys.exc_info()[2]))
+        msg = f"An error occurred: {str(error)}\n{trace}\n" 
+        return [msg.encode('utf-8')]
 
 def cgi (dispatch_function):
     """cgi handler""" 
@@ -199,14 +192,10 @@ def cgi (dispatch_function):
                 post_data = sys.stdin.read()
             
             
-            #if post_data:
-            #    for key, value in cgimod.parse_qsl(post_data, keep_blank_values=True):
-            #        params[key.lower()] = value
-            
             # StringIO to create filehandler so data can be read again by cgi 
             fields = cgimod.FieldStorage(fp=io.StringIO(post_data))
             if fields != None:
-                for key, value in cgimod.parse_qsl(fields.qs_on_post, keep_blank_values=True):
+                for key, value in urllib.parse.parse_qsl(fields.qs_on_post, keep_blank_values=True):
                     params[key.lower()] = value
             
                 

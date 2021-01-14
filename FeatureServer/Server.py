@@ -8,12 +8,11 @@ import logging
 import sys
 import time
 import os
-import traceback
 import configparser
-from web_request.handlers import wsgi, mod_python, cgi
+from web_request.handlers import wsgi, cgi
 from lxml import etree
 from importlib import import_module
-import cgi as cgimod
+import urllib.parse
 
 from FeatureServer.WebFeatureService.Response.TransactionResponse import TransactionResponse
 from FeatureServer.WebFeatureService.Response.TransactionSummary import TransactionSummary
@@ -186,7 +185,7 @@ class Server (object):
         if not found and "typename" not in params and post_data:
             try:
                 dom = etree.XML(post_data)
-                for key, value in cgimod.parse_qsl(post_data, keep_blank_values=True):
+                for key, value in urllib.parse.parse_qsl(post_data, keep_blank_values=True):
                     if key.lower() == 'typename':
                         params['typename'] = value
             except etree.ParseError: pass
