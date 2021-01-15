@@ -16,7 +16,7 @@ class Response(object):
     def getData(self):
         if isinstance(self.data, io.StringIO):
             return self.data.getvalue()
-        if len(self.encoding) > 0:
-            return self.data.encode(self.encoding)
+        if len(self.encoding) > 0 and self.encoding != 'utf-8':
+            return self.data.encode('utf-8').decode(self.encoding)
         else:
-            return str(self.data)
+            return self.data
