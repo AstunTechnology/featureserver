@@ -173,6 +173,7 @@ def cgi (dispatch_function):
 
     accepts = ""
     params = {}
+    post_data = None
     try:
         if "CONTENT_TYPE" in os.environ:
             accepts = os.environ['CONTENT_TYPE']
@@ -181,32 +182,25 @@ def cgi (dispatch_function):
         
         request_method = os.environ["REQUEST_METHOD"]
         content_length = int(os.environ["CONTENT_LENGTH"])
+        if sys.stdin is not None:
+            # IIS doesn't seem to provide EOF
+            # would we ever not have content length?
+            post_data = sys.stdin.read(content_length)   if content_length else sys.stdin.read()
+            
+            fields = cgimod.FieldStorage(fp=io.BytesIO(post_data.encode('utf-8')))
+            
+            if fields != None:    
+                if request_method != "GET" and request_method != "DELETE":  
+                    # BytesIO to create filehandler so data can be read again by cgi 
+                        for key, value in urllib.parse.parse_qsl(fields.qs_on_post, keep_blank_values=True):
+                            params[key.lower()] = value        
+                else:
+                    try:
+                        for key in list(fields.keys()): 
+                            params[key.lower()] = urllib.parse.unquote(fields[key].value)
+                    except TypeError:
+                        pass
         
-        post_data = None 
-        if request_method != "GET" and request_method != "DELETE":
-            if content_length:
-                # IIS doesn't seem to provide EOF
-                post_data = sys.stdin.read(content_length)   
-            else:
-                # would we ever not have content length?
-                post_data = sys.stdin.read()
-            
-            
-            # StringIO to create filehandler so data can be read again by cgi 
-            fields = cgimod.FieldStorage(fp=io.StringIO(post_data))
-            if fields != None:
-                for key, value in urllib.parse.parse_qsl(fields.qs_on_post, keep_blank_values=True):
-                    params[key.lower()] = value
-            
-                
-        else:
-            fields = cgimod.FieldStorage()
-            try:
-                for key in list(fields.keys()): 
-                    params[key.lower()] = urllib.parse.unquote(fields[key].value)
-            except TypeError:
-                pass
-    
         path_info = base_path = ""
 
         if "PATH_INFO" in os.environ: 
@@ -236,10 +230,7 @@ def cgi (dispatch_function):
 
             print("Content-type: %s\n" % format)
 
-            if sys.platform == "win32":
-                binary_print(data)
-            else:    
-                print(data) 
+            print(data) 
         
         else:    
             # Returned object is a 'response'
@@ -250,10 +241,7 @@ def cgi (dispatch_function):
 
             print("Content-type: %s\n" % obj.content_type)
 
-            if sys.platform == "win32":
-                binary_print(obj.getData())
-            else:    
-                print(obj.getData())
+            print(obj.getData())
     
     except ApplicationException as error:
         print("Cache-Control: max-age=10, must-revalidate") # make the client reload        
