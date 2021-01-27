@@ -1,5 +1,5 @@
 
-import FeatureServer
+import json
 from FeatureServer.Service.Action import Action
 from FeatureServer.WebFeatureService.WFSRequest import WFSRequest
 from web_request.handlers import ApplicationException
@@ -27,10 +27,9 @@ class Request (object):
         if action.metadata:
             data.append(action.metadata)
         else:
-            data.append("The following layers are available:")
-            for layer in self.service.datasources:
-                data.append(" * %s, %s/%s" % (layer, self.host, layer))
-        return ("text/plain", "\n".join(data))
+            available_layers = {layer: f"{self.host}/{layer}" for layer in self.service.datasources}
+            data.append(json.dumps({"available_layers": available_layers}))
+        return ("application/json", "\n".join(data))
 
     def parse(self, params, path_info, host, post_data, request_method, format_obj = None):
         """Used by most of the subclasses without changes. Does general
