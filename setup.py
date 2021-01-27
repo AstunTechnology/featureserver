@@ -22,7 +22,7 @@ with open('doc/Readme.txt', 'rb') as f:
         long_description=readme,
         author='Astun Technology',
         author_email='featureserver@astuntechnology.com',
-        url='http://featureserver.org/',
+        url='https://github.com/AstunTechnology/featureserver',
         license="MIT",
         packages=['FeatureServer', 
                     'FeatureServer.DataSource', 
