@@ -40,7 +40,6 @@ class Request (object):
             is touched), and encode_metadata is called. Otherwise, the actions
             are passed onto DataSources to create lists of Features."""
         self.host = host
-        
         try:
             self.get_layer(path_info, params)
         except NoLayerException as e:
@@ -67,21 +66,19 @@ class Request (object):
 
         if request_method == "GET" or (request_method == "OPTIONS" and (post_data is None or len(post_data) <= 0)):
             action = self.get_select_action(path_info, params)
-
+            self.actions.append(action)
         elif request_method == "POST" or request_method == "PUT" or (request_method == "OPTIONS" and len(post_data) > 0):
             actions = self.handle_post(params, path_info, host, post_data, request_method, format_obj = format_obj)
             for action in actions:
                 self.actions.append(action)
-            
-            return
-
         elif request_method == "DELETE":
             id = self.get_id_from_path_info(path_info)
             if id is not False:
                 action.id = id
                 action.method = "delete"
-
-        self.actions.append(action)
+                self.actions.append(action)
+        else:            
+            raise ApplicationException('No action specified')
 
     def get_id_from_path_info(self, path_info):
         """Pull Feature ID from path_info and return it."""
@@ -174,36 +171,32 @@ class Request (object):
             actions = []
             
             id = self.get_id_from_path_info(path_info)
+
             if id is not False:
                 action = Action()
                 action.method = "update"
-                action.id = id
-                
-                features = format_obj.decode(post_data)
-                
+                action.id = id                
+                features = format_obj.decode(post_data)                
                 action.feature = features[0]
                 actions.append(action)
             
-            else:
-                if hasattr(format_obj, 'decode'):
-                    features = format_obj.decode(post_data)
-                    
-                    for feature in features:
-                        action = Action()
-                        action.method = "insert"
-                        action.feature = feature
-                        actions.append(action)
+            elif hasattr(format_obj, 'decode'):
+                features = format_obj.decode(post_data)                    
+                for feature in features:
+                    action = Action()
+                    action.method = "insert"
+                    action.feature = feature
+                    actions.append(action)
             
-                elif hasattr(format_obj, 'parse'):
-                    format_obj.parse(post_data)
-                    
-                    transactions = format_obj.getActions()
-                    if transactions is not None:
-                        for transaction in transactions:
-                            action = Action()
-                            action.method = transaction.__class__.__name__.lower()
-                            action.wfsrequest = transaction
-                            actions.append(action)
+            elif hasattr(format_obj, 'parse'):
+                format_obj.parse(post_data)                   
+                transactions = format_obj.getActions()
+                if transactions is not None:
+                    for transaction in transactions:
+                        action = Action()
+                        action.method = transaction.__class__.__name__.lower()
+                        action.wfsrequest = transaction
+                        actions.append(action)
             
             return actions
         else:

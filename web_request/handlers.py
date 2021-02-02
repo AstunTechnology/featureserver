@@ -188,12 +188,15 @@ def cgi (dispatch_function):
             post_data = sys.stdin.read(content_length)   if content_length else sys.stdin.read()
             
             fields = cgimod.FieldStorage(fp=io.BytesIO(post_data.encode('utf-8')))
+            print(fields)
             
             if fields != None:    
                 if request_method != "GET" and request_method != "DELETE":  
                     # BytesIO to create filehandler so data can be read again by cgi 
                         for key, value in urllib.parse.parse_qsl(fields.qs_on_post, keep_blank_values=True):
                             params[key.lower()] = value        
+                            print(key)
+                            print(value)
                 else:
                     try:
                         for key in list(fields.keys()): 

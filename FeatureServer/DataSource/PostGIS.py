@@ -128,8 +128,6 @@ class PostGIS (DataSource):
     def feature_values (self, feature):
         props = copy.deepcopy(feature.properties)
         for key, val in props.items():
-            if isinstance(val, str): ### b/c psycopg1 doesn't quote unicode
-                props[key] = val.encode(self.encoding)
             if isinstance(val, dict):
                 props[key] = val['value']
         return props
@@ -163,7 +161,9 @@ class PostGIS (DataSource):
             sql = 'INSERT INTO "{}"."{}" ({}) VALUES ({}) RETURNING {}'.format(
                 self.schema, self.table, columns, values, self.fid_col)
 
+
             attrs = self.feature_values(feature)
+            print(attrs)
             logging.debug(cursor.mogrify(sql, attrs))
 
             try:
