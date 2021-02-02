@@ -154,8 +154,8 @@ def wsgi (dispatch_function, environ, start_response):
                 headers.update(returned_data.extra_headers)
             start_response("%s Message" % returned_data.status_code,
                            list(headers.items()))
-            
-            return [returned_data.getData()]
+            data = returned_data.getData()
+            return [data.encode('utf-8')]
 
 
     except ApplicationException as error:
