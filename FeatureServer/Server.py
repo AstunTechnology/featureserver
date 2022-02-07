@@ -245,7 +245,6 @@ class Server (object):
             if request_method != "GET" and hasattr(datasource, 'processes'):
                 raise Exception("You can't post data to a processed layer.")
 
-
             try:
                 datasource.begin()
 
@@ -318,6 +317,7 @@ class Server (object):
 
         else:
             mime, data, headers, encoding = request.encode(response)
+        
 
         return Response(data=data, content_type=mime, headers=headers, status_code=response_code, encoding=encoding)
 

@@ -163,7 +163,6 @@ class PostGIS (DataSource):
 
 
             attrs = self.feature_values(feature)
-            print(attrs)
             logging.debug(cursor.mogrify(sql, attrs))
 
             try:
