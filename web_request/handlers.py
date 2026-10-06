@@ -172,9 +172,12 @@ def cgi (dispatch_function):
     """cgi handler""" 
 
     accepts = ""
+    query_string = ""
     params = {}
     post_data = None
     try:
+        if "QUERY_STRING" in os.environ:
+            query_string = os.environ.get("QUERY_STRING", "")
         if "CONTENT_TYPE" in os.environ:
             accepts = os.environ['CONTENT_TYPE']
         elif "HTTP_ACCEPT" in os.environ:
@@ -200,6 +203,9 @@ def cgi (dispatch_function):
                             params[key.lower()] = urllib.parse.unquote(fields[key].value)
                     except TypeError:
                         pass
+        
+        elif request_method == "DELETE":
+            params = dict(urllib.parse.parse_qsl(query_string))
         
         path_info = base_path = ""
 
